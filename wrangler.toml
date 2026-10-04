@@ -1,0 +1,17 @@
+name = "brutjagd"
+main = "src/worker.js"
+compatibility_date = "2025-01-01"
+
+# Das Spiel selbst (eine einzelne HTML-Datei) wird als statische Seite ausgeliefert.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# Ein Durable Object pro Raum, es hält die Verbindungen der (max. 4) Spieler.
+[[durable_objects.bindings]]
+name = "ROOM"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
