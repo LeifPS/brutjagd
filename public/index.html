@@ -405,7 +405,7 @@ AREAS.forEach((A,i)=>{A.v=5+6*i;A.luck=Math.round((1+i*1.2)*10)/10;});
 
 
 /* ---------- Spielstand ---------- */
-const SAVE_KEY='mob-hatchery-save-1', Q_KEY='mob-hatchery-quality', SAVE_EPOCH=2;
+const SAVE_KEY='mob-hatchery-save-1', Q_KEY='mob-hatchery-quality', SAVE_EPOCH=3;
 function freshState(){const p=[];for(let i=0;i<PADS_N;i++)p.push(null);p[0]={r:0,end:Date.now()+8000};
   return{epoch:SAVE_EPOCH,ver:5,eggFound:new Array(NR).fill(0),money:0,speedLv:0,carryLv:0,slotLv:0,pets:[],equipped:[],stash:new Array(NR).fill(0),pads:p,nextId:1,last:Date.now(),dex:new Array(SPECIES.length).fill(false),won:false};}
 let S=freshState(), loadedOld=false;
