@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="de"><head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Brutjagd</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -139,6 +139,90 @@ kbd{font:800 11px var(--body);border:1px solid var(--line);border-radius:5px;pad
 #nameIn{font:600 16px var(--body);color:var(--text);background:#ffffff14;border:1px solid var(--line);border-radius:10px;padding:9px 12px;width:min(260px,100%)}
 #nameIn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .nameRow{display:grid;gap:4px}
+
+/* ---- Mobile / Tablet ---- */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior:none}
+#app{position:fixed;inset:0;height:auto}
+.modal{overflow:hidden}
+.sheet{touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#start{overflow:auto;touch-action:pan-y;display:flex;-webkit-overflow-scrolling:touch}
+#start .box{margin:auto}
+#win{overflow:auto;touch-action:pan-y}
+textarea,input{font-size:16px}
+button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+@supports(padding:max(0px)){
+  #hud{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom))}
+  .modal,#start,#win{padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(16px,env(safe-area-inset-bottom))}
+  #joy{left:max(24px,calc(env(safe-area-inset-left) + 12px));bottom:max(84px,calc(env(safe-area-inset-bottom) + 72px))}
+  #btnPick{right:max(24px,calc(env(safe-area-inset-right) + 12px));bottom:max(96px,calc(env(safe-area-inset-bottom) + 84px))}
+}
+@media (pointer:coarse){
+  kbd{display:none}
+  #joy{width:140px;height:140px}
+  #joy i{width:56px;height:56px;margin:-28px 0 0 -28px}
+  #btnPick{font-size:22px;padding:20px 28px}
+  .btn{min-height:44px;font-size:16px}
+  .x{min-height:44px;padding:8px 16px;font-size:16px}
+  #mm{height:30px}
+  #mmPlayer{height:34px}
+  .pet{padding:10px}
+  .ltab{font-size:15px}
+  .sub{font-size:15px}
+}
+@media (max-width:900px),(pointer:coarse) and (max-width:1100px){
+  .top{gap:6px}
+  .tc{order:3;flex:1 1 100%;max-width:none;margin-inline:0}
+  .tr{order:2}
+  .tr{flex:1 1 auto;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:100%}
+  .tr .btn{padding:8px 11px;font-size:15px}
+  .tl{min-width:0}
+  #money{font-size:26px}
+  #toasts{top:auto;bottom:150px}
+  .sheet{padding:14px;border-radius:16px}
+  .sheet h2{font-size:24px}
+}
+@media (max-width:520px){
+  .top{display:grid;grid-template-columns:1fr;gap:6px}
+  .tl{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;padding:6px 12px}
+  .tl .bagrow{margin-top:0}
+  #speedTxt,#dexTxt{margin-top:0!important}
+  .tl .bar,#stash{display:none}
+  .tr{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+  .tr .btn{padding:8px 2px;font-size:13px;line-height:1.1;text-align:center;overflow:hidden}
+  .tc{order:0}
+  .odds{font-size:13px}
+  #start h1{font-size:clamp(44px,16vw,68px)}
+  #start .box{gap:12px}
+  #start p,#start ul{font-size:15px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(118px,1fr))}
+  .irow{gap:8px;padding:8px}
+  .irow .thumb{flex-basis:72px;width:72px;height:72px}
+  .irow .st{white-space:normal}
+  .pcard .sw,.pcard img{width:80px;height:80px}
+}
+@media (max-height:500px){
+  #hud{padding-block:6px}
+  .top{gap:4px}
+  .tl{padding:5px 9px;min-width:0}
+  .tl .bagrow{margin-top:2px}
+  #dexTxt,#dexBar,.bar,#stash{display:none}
+  #money{font-size:22px}
+  .tc{order:0;flex:1 1 200px;padding:5px 10px}
+  .tc .odds,.tc .as{display:none}
+  .an{font-size:17px}
+  .tr{flex:0 0 auto;flex-wrap:nowrap}
+  .tr .btn{flex:0 0 auto;min-height:38px;padding:6px 9px;font-size:14px}
+  #joy{width:110px;height:110px;bottom:46px}
+  #joy i{width:44px;height:44px;margin:-22px 0 0 -22px}
+  #btnPick{bottom:52px;padding:14px 22px;font-size:19px}
+  #lavaInfo{font-size:15px;min-height:18px}
+  #toasts{bottom:90px}
+  #start .box{max-width:760px;grid-template-columns:1fr 1fr;gap:8px 20px}
+  #start h1,#start .nameRow,#start>.box>div{grid-column:auto}
+  #start ul{font-size:13px}
+  .sheet{max-height:calc(100% - 8px)}
+  .modal{padding:6px}
+}
 @media (prefers-reduced-motion:reduce){.toast{animation:none}#boss.on{animation:none;opacity:1}}
 </style>
 <div id="app">
@@ -1696,6 +1780,9 @@ joyEl.addEventListener('pointerdown',e=>{joyId=e.pointerId;try{joyEl.setPointerC
 joyEl.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyMove(e);});
 const joyEnd=e=>{if(e.pointerId===joyId){joyId=null;joy.x=joy.y=0;knob.style.transform='';}};
 joyEl.addEventListener('pointerup',joyEnd);joyEl.addEventListener('pointercancel',joyEnd);
+/* iOS: Pinch-/Doppeltipp-Zoom und Kontextmenü auf der Spielfläche verhindern */
+['gesturestart','gesturechange','gestureend'].forEach(n=>document.addEventListener(n,e=>e.preventDefault()));
+document.addEventListener('contextmenu',e=>{if(e.target===canvas||e.target.id==='joy'||e.target.id==='btnPick')e.preventDefault();});
 
 /* Eigene Bossmodelle der Gebiete 31-35. MOB6[id]=(C,inner,H)=>({limbs,tents,upd(t,mv,dt,m)}) */
 const MOB6={};
@@ -3575,5 +3662,3 @@ try{Promise.race([document.fonts.load('28px "Lilita One"'),new Promise(r=>setTim
 })();
 
 </script>
-
-</body></html>
