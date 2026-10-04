@@ -68,7 +68,7 @@ kbd{font:800 11px var(--body);border:1px solid var(--line);border-radius:5px;pad
 @keyframes pulse{to{opacity:.45}}
 #mmPlayer{position:absolute;top:-2px;width:4px;height:28px;margin-left:-2px;background:#fff;border-radius:2px;box-shadow:0 0 6px #fff}
 #mmDots i{position:absolute;width:5px;height:5px;margin:-2px 0 0 -2px;border-radius:50%;background:var(--c);box-shadow:0 0 3px #000}
-#joy{display:none;position:absolute;left:24px;bottom:84px;width:120px;height:120px;border-radius:50%;background:#ffffff14;border:2px solid #ffffff33;pointer-events:auto;touch-action:none}
+#joy{display:none;position:absolute;left:24px;bottom:84px;width:120px;height:120px;border-radius:50%;background:#ffffff14;border:2px solid #ffffff33;pointer-events:none;touch-action:none;opacity:.55}
 #joy i{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;background:#ffffff55}
 @media (pointer:coarse){#joy{display:block}}
 #flash{position:absolute;inset:0;background:radial-gradient(circle,#ff3b0000 30%,#ff3b00cc);opacity:0;pointer-events:none;transition:opacity .6s}
@@ -1769,17 +1769,20 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
 let dragId=null,lx=0,ly=0;
-canvas.addEventListener('pointerdown',e=>{dragId=e.pointerId;lx=e.clientX;ly=e.clientY;try{canvas.setPointerCapture(e.pointerId);}catch(_){}});
-canvas.addEventListener('pointermove',e=>{if(e.pointerId!==dragId)return;yaw+=(e.clientX-lx)*.005;pitch=clamp(pitch+(e.clientY-ly)*.004,.15,1.25);lx=e.clientX;ly=e.clientY;});
-const endDrag=e=>{if(e.pointerId===dragId)dragId=null;};
+/* Touch: linke Bildschirmseite = schwebender Joystick (erscheint dort, wo du tippst), rechte Seite = Kamera drehen */
+const joyEl=$('joy'),knob=joyEl.firstElementChild;let joyId=null,jcx=0,jcy=0;
+function joyAt(x,y){jcx=x;jcy=y;joyEl.style.left=(x-joyEl.offsetWidth/2)+'px';joyEl.style.top=(y-joyEl.offsetHeight/2)+'px';joyEl.style.bottom='auto';}
+function joyReset(){joyEl.style.left=joyEl.style.top=joyEl.style.bottom='';joyEl.style.opacity='';}
+function joyMove(e){let dx=e.clientX-jcx,dy=e.clientY-jcy;const m=Math.hypot(dx,dy),R=Math.max(40,joyEl.offsetWidth*.4);if(m>R){dx=dx/m*R;dy=dy/m*R;}joy.x=dx/R;joy.y=-dy/R;knob.style.transform='translate('+dx+'px,'+dy+'px)';}
+canvas.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='touch'&&joyId===null&&e.clientX<innerWidth*.45&&e.clientY>innerHeight*.3){joyId=e.pointerId;joyAt(e.clientX,e.clientY);joyEl.style.opacity='1';try{canvas.setPointerCapture(e.pointerId);}catch(_){}joyMove(e);return;}
+  dragId=e.pointerId;lx=e.clientX;ly=e.clientY;try{canvas.setPointerCapture(e.pointerId);}catch(_){}});
+canvas.addEventListener('pointermove',e=>{
+  if(e.pointerId===joyId){joyMove(e);return;}
+  if(e.pointerId!==dragId)return;yaw+=(e.clientX-lx)*.005;pitch=clamp(pitch+(e.clientY-ly)*.004,.15,1.25);lx=e.clientX;ly=e.clientY;});
+const endDrag=e=>{if(e.pointerId===dragId)dragId=null;if(e.pointerId===joyId){joyId=null;joy.x=joy.y=0;knob.style.transform='';joyReset();}};
 canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',endDrag);
 canvas.addEventListener('wheel',e=>{dist=clamp(dist+e.deltaY*.01,9,30);e.preventDefault();},{passive:false});
-const joyEl=$('joy'),knob=joyEl.firstElementChild;let joyId=null;
-function joyMove(e){const r=joyEl.getBoundingClientRect();let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);const m=Math.hypot(dx,dy),R=52;if(m>R){dx=dx/m*R;dy=dy/m*R;}joy.x=dx/R;joy.y=-dy/R;knob.style.transform='translate('+dx+'px,'+dy+'px)';}
-joyEl.addEventListener('pointerdown',e=>{joyId=e.pointerId;try{joyEl.setPointerCapture(e.pointerId);}catch(_){}joyMove(e);});
-joyEl.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyMove(e);});
-const joyEnd=e=>{if(e.pointerId===joyId){joyId=null;joy.x=joy.y=0;knob.style.transform='';}};
-joyEl.addEventListener('pointerup',joyEnd);joyEl.addEventListener('pointercancel',joyEnd);
 /* iOS: Pinch-/Doppeltipp-Zoom und Kontextmenü auf der Spielfläche verhindern */
 ['gesturestart','gesturechange','gestureend'].forEach(n=>document.addEventListener(n,e=>e.preventDefault()));
 document.addEventListener('contextmenu',e=>{if(e.target===canvas||e.target.id==='joy'||e.target.id==='btnPick')e.preventDefault();});
