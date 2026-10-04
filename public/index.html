@@ -3363,7 +3363,9 @@ let resetArm=false;
 $('btnReset').onclick=function(){
   if(!resetArm){resetArm=true;this.textContent='Wirklich alles löschen? Nochmal klicken.';return;}
   resetArm=false;this.textContent='Spielstand löschen';
-  S=freshState();carried=[];refreshCarry();despawnMobs(false);{const sp=spawnOf(mySlot);P.x=sp.x;P.z=sp.z;}recalc();rebuildPets();netDirty.pd=1;netDirty.pt=1;save();renderUp();toast('Neues Spiel gestartet.');
+  /* Sauberer Neustart: frischen Stand speichern und Seite neu laden, damit Eier (auf Brutkästen, im Gang, getragen), Tiere und Mobs wirklich weg sind */
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(freshState()));}catch(e){}
+  noSave=true;toast('Neues Spiel startet …');setTimeout(()=>location.reload(),350);
 };
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closePanels));
 for(const id of['mInv','mUp','mIdx'])$(id).addEventListener('pointerdown',e=>{if(e.target===$(id))closePanels();});
