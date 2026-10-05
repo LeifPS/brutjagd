@@ -614,6 +614,10 @@ function buildFlavor(a){
   const A=AREAS[a],x0=AX[a],LEN=ALEN[a],q=a/30,hs=(a*2654435761>>>0),R=(()=>{let z=hs||1;return()=>{z^=z<<13;z>>>=0;z^=z>>>17;z^=z<<5;z>>>=0;return z/4294967296;};})();
   const gl=new THREE.Color(A.glow||0xffffff),var2=(a*7+3)%5,floor=(a*3+1)%4;
   const m4=new THREE.Matrix4(),qt=new THREE.Quaternion(),eu=new THREE.Euler();
+  /* Wandstil: Zinnen, Banner oder Leuchtstäbe je Gebiet */
+  {const ws=(a*5+2)%4,wm=new THREE.MeshStandardMaterial({color:new THREE.Color(A.wall).lerp(gl,.25),emissive:gl,emissiveIntensity:ws===2?.9:.15,roughness:.7});
+    const nw=Math.floor(LEN/(ws===0?4:ws===1?9:6)),geo=ws===0?new THREE.BoxGeometry(1.8,1,1.3):ws===1?new THREE.BoxGeometry(.12,3.4,1.6):ws===2?new THREE.CylinderGeometry(.12,.12,3,5):null;
+    if(geo){const iw=new THREE.InstancedMesh(geo,wm,nw*2);let k=0;for(const sd of[-1,1])for(let i=0;i<nw;i++){m4.compose(new THREE.Vector3(x0+(i+.5)*LEN/nw,ws===0?5.5:ws===1?3.4:6.5,sd*(HW+.55)),new THREE.Quaternion().setFromEuler(new THREE.Euler(0,ws===1?Math.PI/2:0,0)),new THREE.Vector3(1,1,1));iw.setMatrixAt(k++,m4);}scene.add(iw);}}
   /* Zweit-Deko */
   const geos=[new THREE.ConeGeometry(.35,1,5),new THREE.TorusGeometry(.7,.12,6,14),new THREE.BoxGeometry(1.4,.25,1),new THREE.SphereGeometry(.4,8,6),new THREE.CylinderGeometry(.25,.4,1,6)];
   const em=[.5,.9,.2,1.2,.4][var2];
@@ -639,6 +643,27 @@ function buildFlavor(a){
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));
     const pt=new THREE.Points(g,new THREE.PointsMaterial({map:gTex,color:gl,size:.5+q*.4,transparent:true,opacity:.75,depthWrite:false,blending:THREE.AdditiveBlending}));pt.frustumCulled=false;scene.add(pt);
     envList.push({cx:x0+LEN/2,half:LEN/2,u:{root:pt,upd(t){const p=g.attributes.position.array;for(let i=0;i<N;i++)p[i*3+1]=4+Math.sin(t*.6+ph[i])*3.4;g.attributes.position.needsUpdate=true;}}});
+  }
+
+  /* Wahrzeichen jenseits der Wände: je Gebiet andere Bauform, Größe wächst mit dem Gebiet */
+  {
+    const base=new THREE.Color(A.a).lerp(new THREE.Color(A.wall),.5),bm=new THREE.MeshStandardMaterial({color:base,roughness:.7}),gm=new THREE.MeshStandardMaterial({color:gl,emissive:gl,emissiveIntensity:1.1,roughness:.4});
+    const arch=[(g,u)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(.5*u,1.1*u,14*u,6),bm);m.position.y=7*u;g.add(m);const t=new THREE.Mesh(new THREE.OctahedronGeometry(1.4*u),gm);t.position.y=15.5*u;g.add(t);return t;},
+      (g,u)=>{const r=new THREE.Mesh(new THREE.TorusGeometry(6*u,.6*u,8,32),gm);r.position.y=8*u;g.add(r);const b=new THREE.Mesh(new THREE.CylinderGeometry(1.5*u,2*u,1.6*u,8),bm);b.position.y=.8*u;g.add(b);return r;},
+      (g,u)=>{for(let i=0;i<4;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(3*u,(7-i*1.4)*u,3*u),bm);m.position.y=(3.5-i*.4)*u+i*2.6*u;m.scale.set(1-i*.2,1,1-i*.2);g.add(m);}const t=new THREE.Mesh(new THREE.ConeGeometry(1.2*u,3*u,6),gm);t.position.y=15*u;g.add(t);return t;},
+      (g,u)=>{let top;for(let i=0;i<5;i++){const m=new THREE.Mesh(new THREE.ConeGeometry((.9+R()*.6)*u,(5+R()*7)*u,5),i%2?gm:bm);m.position.set((R()-.5)*7*u,3*u,(R()-.5)*7*u);m.rotation.z=(R()-.5)*.5;g.add(m);top=m;}return top;},
+      (g,u)=>{for(let i=0;i<7;i++){const an=i/7*6.283,m=new THREE.Mesh(new THREE.BoxGeometry(1.4*u,6*u,1.4*u),bm);m.position.set(Math.cos(an)*6*u,3*u,Math.sin(an)*6*u);g.add(m);}const o=new THREE.Mesh(new THREE.SphereGeometry(1.6*u,12,10),gm);o.position.y=3*u;g.add(o);return o;},
+      (g,u)=>{const p=new THREE.Mesh(new THREE.ConeGeometry(7*u,9*u,4),bm);p.position.y=4.5*u;p.rotation.y=.78;g.add(p);const e=new THREE.Mesh(new THREE.OctahedronGeometry(1.1*u),gm);e.position.y=11*u;g.add(e);return e;},
+      (g,u)=>{const grp=new THREE.Group();for(let i=0;i<8;i++){const an=i/8*6.283,o=new THREE.Mesh(new THREE.SphereGeometry((.7+R()*.5)*u,8,6),i%2?gm:bm);o.position.set(Math.cos(an)*4*u,7*u+Math.sin(i*1.7)*2*u,Math.sin(an)*4*u);grp.add(o);}g.add(grp);const c=new THREE.Mesh(new THREE.CylinderGeometry(.4*u,.4*u,7*u,6),bm);c.position.y=3.5*u;g.add(c);return grp;},
+      (g,u)=>{const st=new THREE.Mesh(new THREE.CylinderGeometry(.7*u,.9*u,5*u,8),bm);st.position.y=2.5*u;g.add(st);const cap=new THREE.Mesh(new THREE.SphereGeometry(4*u,14,8,0,6.283,0,1.57),gm);cap.position.y=5*u;g.add(cap);return cap;},
+      (g,u)=>{const pl=new THREE.Mesh(new THREE.CylinderGeometry(.35*u,.5*u,10*u,6),bm);pl.position.y=5*u;g.add(pl);const gr=new THREE.Group();for(let i=0;i<4;i++){const w=new THREE.Mesh(new THREE.BoxGeometry(6*u,.8*u,.4*u),gm);w.rotation.z=i*1.5708;gr.add(w);}gr.position.y=10*u;g.add(gr);return gr;},
+      (g,u)=>{const tr=new THREE.Mesh(new THREE.CylinderGeometry(.6*u,.9*u,7*u,6),bm);tr.position.y=3.5*u;g.add(tr);for(let i=0;i<6;i++){const an=i/6*6.283,l=new THREE.Mesh(new THREE.SphereGeometry(.55*u,8,6),gm);l.position.set(Math.cos(an)*3.4*u,7.5*u+(i%2)*1.5*u,Math.sin(an)*3.4*u);g.add(l);}const cr=new THREE.Mesh(new THREE.SphereGeometry(3.4*u,10,8),bm);cr.position.y=8*u;cr.scale.y=.6;g.add(cr);return cr;}];
+    const nL=1+(a>=10?1:0)+(a>=20?1:0),pick=(a*11+5)%arch.length,spin=[];
+    for(let i=0;i<nL;i++){
+      const g=new THREE.Group(),u=1.7+q*1.6,ty=arch[(pick+i*3)%arch.length](g,u),sd=(i+a)%2?-1:1;
+      g.position.set(x0+LEN*(.22+.28*i+R()*.12),0,sd*(HW+11+R()*9));g.rotation.y=R()*6.28;scene.add(g);spin.push(ty);
+    }
+    envList.push({cx:x0+LEN/2,half:LEN/2,u:{upd(t){for(let i=0;i<spin.length;i++){spin[i].rotation.y=t*(.3+i*.15);}}}});
   }
   /* Torbögen über dem Gang ab Gebiet 15 (jedes zweite Gebiet) */
   if(a>=14&&a%2===0){
