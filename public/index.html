@@ -277,14 +277,14 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
     </div>
     <div><button class="x" id="btnReset">Spielstand löschen</button></div>
   </div></div>
-  <div id="win" hidden><div class="box"><h2>Durchgespielt!</h2><p>Du hast alle 114 Haustiere gesammelt und jeden Boss überlebt. Das Spiel läuft weiter, wenn du willst.</p><button class="btn gold" id="btnWin" style="font-size:18px;padding:10px 20px">Weiterspielen</button></div></div>
+  <div id="win" hidden><div class="box"><h2>Durchgespielt!</h2><p>Du hast alle <span class="nP">114</span> Haustiere gesammelt und jeden Boss überlebt. Das Spiel läuft weiter, wenn du willst.</p><button class="btn gold" id="btnWin" style="font-size:18px;padding:10px 20px">Weiterspielen</button></div></div>
   <div id="start"><div class="box">
     <h1>Brut-<br>jagd</h1>
-    <p>Sammle Eier in einem langen Gang mit 35 Gebieten. Hebst du ein Ei auf, erwacht der Boss dieses Gebiets und jagt dich bis zu deinem Plot.</p>
+    <p>Sammle Eier in einem langen Gang mit <span class="nA">35</span> Gebieten. Hebst du ein Ei auf, erwacht der Boss dieses Gebiets und jagt dich bis zu deinem Plot.</p>
     <ul>
       <li>Hebe Eier mit E (oder dem Knopf „Aufheben“) auf. Bring sie zurück zu deinem Plot und stell dich auf einen freien Brutkasten.</li>
       <li>Seltene Eier brauchen länger zum Schlüpfen. Deine ausgerüsteten Haustiere laufen auf dem Plot herum und bringen Geld pro Sekunde.</li>
-      <li>Jedes Gebiet hat andere Bosse, mehr Glück und andere Eier. Sammle alle 114 Haustiere im Index.</li>
+      <li>Jedes Gebiet hat andere Bosse, mehr Glück und andere Eier. Sammle alle <span class="nP">114</span> Haustiere im Index.</li>
       <li>Mit Geld kaufst du Tempo (⚡) und eine größere Tasche in den Läden links und rechts vom Gang. Mehr Haustier-Plätze gibt es am Schild an deinem Zaun.</li>
       <li>WASD oder Pfeile laufen, Maus ziehen oder Q und R drehen die Kamera. I, U und X öffnen die Menüs, die das Spiel nicht anhalten.</li>
       <li>Mehrspieler: Andere sehen dich, deine Eier und Tiere, aber ihr stört euch nicht.</li>
@@ -304,6 +304,8 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script>
+window.AD7=window.AD7||{};AD7[39]={area:{name:'Test',a:'#333',b:'#222',wall:0x222222,glow:0xff8800,fog:'#101010',deco:{t:'octa',c:0xff8800,e:.5},rule:'Testregel',ruleShort:'Test',mob:{name:'Testboss',kind:'quad',col:'#664422',eye:0xffaa00,s:6.6}},tier:{name:'Testei',col:0xff8800,desc:'x'},pets:[0,1,2,3,4].map(i=>({name:'Tier'+i,col:'#ff8800',desc:''}))};
+
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
@@ -314,7 +316,13 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 const hex6=n=>'#'+('000000'+n.toString(16)).slice(-6);
 
 /* ---------- Daten ---------- */
-const PLOT_W=40, PLOT_Z=30, NAREAS=35, ALEN=Array.from({length:35},(_,i)=>60+3*i), AX=[], END=(()=>{let x=0;for(let i=0;i<35;i++){AX.push(x);x+=ALEN[i];}return x;})(), HW=10, PADS_N=8, MAXE=6, NSLOTS=6, LOBBY_R=58, LOBBY_RH=72, PLOT_HX=10, PLOT_HZ=11, GATE_HZ=4;
+const PETDEC={}, AREAFX={};
+const AD7=window.AD7||{};
+/* fehlende Zwischen-Gebiete (nur beim Einzelbau eines Gebiets) werden durch Platzhalter ersetzt */
+(function(){const ks=Object.keys(AD7).map(Number);const mx=ks.length?Math.max.apply(null,ks):34;
+  for(let k=35;k<=mx;k++)if(!AD7[k])AD7[k]={area:{name:'Platzhalter '+(k+1),a:'#333340',b:'#2a2a36',wall:0x222230,glow:0x8888aa,fog:'#101018',deco:{t:'box',c:0x8888aa,e:0},mob:{name:'Platzhalter',kind:'quad',col:'#444455',eye:0xffffff,s:6}},tier:{name:'Platzhalter'+k,col:0x8888aa,desc:''},pets:[0,1,2,3,4].map(i=>({name:'Platzhalter'+k+'-'+i,col:'#888899',desc:''}))};})();
+const AD7K=Object.keys(AD7).map(Number).sort((a,b)=>a-b);
+const PLOT_W=40, PLOT_Z=30, NAREAS=35+AD7K.length, ALEN=Array.from({length:NAREAS},(_,i)=>60+3*i), AX=[], END=(()=>{let x=0;for(let i=0;i<NAREAS;i++){AX.push(x);x+=ALEN[i];}return x;})(), HW=10, PADS_N=8, MAXE=6, NSLOTS=6, LOBBY_R=58, LOBBY_RH=72, PLOT_HX=10, PLOT_HZ=11, GATE_HZ=4;
 /* Lobby: 6 Plots im Halbkreis um den Gangeingang (0,0), jeder Plot schaut zur Mitte.
    Lokales Koordinatensystem eines Plots: lx zeigt zur Mitte (Tor bei lx=+10), lz läuft am Zaun entlang. */
 const SLOTS=[];
@@ -365,6 +373,7 @@ const NEWT=['Arkan','Phantom','Dämonisch','Himmlisch','Elementar','Titanisch','
 const TCOL=[0x9b5cff,0xbfeff0,0xff2a2a,0xfff0a0,0xff9a40,0x8fa4b8,0x5a7aff,0xe05aff,0xffe46a,0x3dff7a,0xff3ad8,0xe0b050,0xff7a20,0xffd0f0,0xf0d8a0,0x2affa0,0x30c8ff,0xff5a5a,0xc080ff,0xb8ff40,0xffffff,0xffa0ff,0x80c0ff,0xffd02a,0xfff8e0,0x6affc8,0xff7a9a,0xa0a0ff,0x40e0ff,0xfffff0];
 NEWT.forEach((n,k)=>{const t=8+k,c=new THREE.Color(TCOL[k]);
   RAR.push({name:n,css:'#'+c.getHexString(),col:c.getHex(),base:0,hatch:540+(t-7)*110,mps:0});});
+AD7K.forEach(k=>{const tr=AD7[k].tier,t=RAR.length,c=new THREE.Color(tr.col);RAR.push({name:tr.name,css:'#'+c.getHexString(),col:c.getHex(),base:0,hatch:540+(t-7)*110,mps:0,desc:tr.desc});});
 (function(){
   const A=(name,a,b,wall,glow,fog,dt,dc,de,mob)=>({name:name,a:a,b:b,wall:wall,glow:glow,fog:fog,deco:{t:dt,c:dc,e:de},mob:mob});
   const L=[
@@ -393,15 +402,18 @@ NEWT.forEach((n,k)=>{const t=8+k,c=new THREE.Color(TCOL[k]);
    A('Quelle der Welten','#6a5e8a','#5e5280',0x3a3058,0xfff4c0,'#1c1630','octa',0xffffff,1.4,{name:'Der Urgeist',kind:'custom',id:'urspirit',col:'#fff8d8',eye:0xffffff,s:6.4})
   ];
   L.forEach((a,i)=>{a.luck=Math.round(28*Math.pow(1.3,i+1)*10)/10;a.v=Math.round((66+(i+1)*6.5)*10)/10;AREAS.push(a);});
+  /* Neue Gebiete 36+ kommen aus ad*.js (window.AD7[index]) */
+  AD7K.forEach(k=>{const d=AD7[k],a=d.area;AREAS.push({name:a.name,a:a.a,b:a.b,wall:a.wall,glow:a.glow,fog:a.fog,deco:a.deco,rule:a.rule,ruleShort:a.ruleShort,mob:a.mob});});
 })();
 const CRE=['Runenfalke','Arkanschlange','Zauberlehrling','Geisterauge','Schemengreif','Nebelwolf','Höllenrabe','Teufelsnatter','Imp','Cherubim','Himmelspegasus','Wolkenlöwe','Sturmfalke','Lavaschlange','Elementargeist','Zyklop','Titanengreif','Titanenbär','Sternenkranich','Kometenschlange','Astralwandler','Nebelauge','Galaxiedrache','Spiralwolf','Novaphönix','Plasmaschlange','Sonnenwächter','Quantenauge','Quantendrache','Quantenfuchs','Spaltenvogel','Portalschlange','Dimensionswandler','Uhrwerkauge','Chronogreif','Zeitwolf','Schwarzfalke','Gravitationswurm','Leerenwächter','Urfunke','Urknalldrache','Funkenwolf','Stundenfalke','Sanduhrschlange','Zeitwächter','Ewigkeitsauge','Ewigkeitsdrache','Ewigkeitswolf','Endlosfalke','Ouroboros','Unendlichkeitswächter','Omegaauge','Omegadrache','Omegawolf','Machtfalke','Thronschlange','Allherrscher','Schöpferauge','Schöpferdrache','Schöpferlöwe','Lichtfalke','Perlschlange','Absoluter Richter','Jenseitsauge','Transzendenter Drache','Seelenwolf','Donnervogel','Sturmwurm','Gewittergigant','Weltenauge','Thronpegasus','Königslöwe','Urphönix','Urschlange','Urahn','Grenzgänger','Schleierfalke','Jenseitswolf','Seelenhirsch','Wurzelgeist','Lebensdrache','Paradoxfuchs','Schleifenwurm','Eschervogel','Äonenwal','Sternenalter','Zeitalterdrache','Vollender','Lichtgeist','Lichtphönix'];
 for(let t=8;t<=37;t++)for(let j=0;j<3;j++){const idx=(t-8)*3+j;const c=new THREE.Color().setHSL(((t*.137)+j*.08)%1,.7,.55);
   SPECIES.push({r:t,name:CRE[idx],col:'#'+c.getHexString(),kind:'gen',seed:idx+1});}
+AD7K.forEach((k,n)=>{const t=38+n;AD7[k].pets.forEach((p,j)=>SPECIES.push({r:t,name:p.name,col:p.col,kind:'gen',seed:300+n*5+j,j:j,desc:p.desc}));});
 const NR=RAR.length;
 RAR.forEach((r,t)=>{r.mps=Math.max(1.5,Math.round(1.5*Math.pow(2.4,t)*10)/10);});
 const pw3=ms=>ms*ms*ms;
 const fmtV=ms=>'⚡ '+fmt(Math.round(pw3(ms)/10)*10);
-AREAS.forEach((A,i)=>{A.v=5+6*i;A.luck=Math.round((1+i*1.2)*10)/10;});
+AREAS.forEach((A,i)=>{A.v=5+6*i;if(i>=35)A.v=Math.round((5+6*i)*(1+.012*(i-34)));A.luck=Math.round((1+i*1.2)*10)/10;});
 
 
 /* ---------- Spielstand ---------- */
@@ -426,7 +438,7 @@ S.ver=5;
 let noSave=false;function save(){if(noSave)return;S.last=Date.now();try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
 const speed=()=>8+1.5*S.speedLv, cap=()=>1+S.carryLv, slots=()=>3+S.slotLv;
 const COST={speed:()=>Math.floor(250*Math.pow(1.22,S.speedLv)),carry:()=>Math.floor(1000*Math.pow(3.2,S.carryLv)),slot:()=>Math.floor(10000*Math.pow(4.5,S.slotLv))};
-const MAXLV={speed:140,carry:13,slot:11};
+const MAXLV={speed:Math.max(140,Math.ceil((AREAS[AREAS.length-1].v-8)/1.5)+12),carry:13,slot:11};
 let normSpeed=false;try{normSpeed=localStorage.getItem('mh-norm')==='1';}catch(_){}
 const speedEff=()=>normSpeed?Math.min(8,speed()):speed();
 function toggleNorm(){normSpeed=!normSpeed;try{localStorage.setItem('mh-norm',normSpeed?'1':'0');}catch(_){}toast(normSpeed?'Tempo: Normal ('+fmtV(8)+')':'Tempo: Voll ('+fmtV(speed())+')');}
@@ -1214,7 +1226,7 @@ function makeGenPet(sp,v){
     case 35:{const m1=M(0xa0a0ff,0xa0a0ff,{emissiveIntensity:1.3});const m2=M(0xffffff,0xffffff,{emissiveIntensity:1.3});const a1=tor(.85,.03,m1,40),a2=tor(.85,.03,m2,40);g.add(a1);g.add(a2);a1.position.y=a2.position.y=.4;anim.push(t=>{a1.rotation.set(t*.9,0,.6);a2.rotation.set(-t*.9,0,-.6);});break;}
     case 36:{const gm=M(0x40e0ff,0x40e0ff,{emissiveIntensity:1.5});const rs=[];for(let i=0;i<3;i++){const r2=tor(.7+i*.2,.02,gm,40);r2.position.y=.4;g.add(r2);rs.push(r2);}for(let i=0;i<6;i++){const o=add(GBOX,gm,0,0,0,.06);orb.push({m:o,rad:.7+(i%3)*.2,sp:1+i*.08,ph:i/6*TAU,y:.4});}anim.push(t=>{rs.forEach((r2,i)=>{r2.rotation.set(1.2+i*.5,t*(.4+i*.2),i);});});break;}
     case 37:{const wm=M(0xffffff,0xfffff0,{emissiveIntensity:1.8});for(let i=0;i<5;i++){const a=i/5*TAU;add(GCONE,wm,Math.cos(a)*.3,top+.3,hz+Math.sin(a)*.3,.05,.3,.05);}const ha=tor(.4,.03,wm,24);ha.rotation.x=Math.PI/2;ha.position.set(0,top+.45,hz);g.add(ha);for(let i=0;i<8;i++){const o=add(GSPH,wm,0,0,0,.06);orb.push({m:o,rad:1+(i%2)*.15,sp:.7+i*.06,ph:i/8*TAU,y:-.2+i*.15});}anim.push(t=>{ha.position.y=top+.45+Math.sin(t*2)*.06;glowS.material.color.setHSL((t*.1)%1,.4,.9);});break;}
-    default:{const dod=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.DodecahedronGeometry(1.1)),new THREE.LineBasicMaterial({color:0xfff8e0,blending:THREE.AdditiveBlending,depthWrite:false}));dod.position.y=.2;g.add(dod);for(let i=0;i<5;i++){const c=new THREE.Color().setHSL(i/5,.9,.65);const o=add(GSPH,M(c.getHex(),c.getHex(),{emissiveIntensity:1.4}),0,0,0,.08);orb.push({m:o,rad:.9+i*.05,sp:1.1+i*.12,ph:i/5*TAU,y:.1+i*.1});}anim.push(t=>{dod.rotation.set(t*.3,t*.4,0);const h=(t*.12)%1;glowS.material.color.setHSL(h,.8,.7);});}
+    default:{if(PETDEC[tier]){PETDEC[tier]({g:g,add:add,tor:tor,M:M,orb:orb,anim:anim,wings:wings,top:top,hy:hy,hz:hz,C:C,R:R,sp:sp,j:sp.j||0,body:body,dark:dark,light:light,glow:glow,acc:acc,eyeM:eyeM,orbit:orbit,feathered:feathered,tier:tier,GSPH:GSPH,GCONE:GCONE,GBOX:GBOX,GCYL:GCYL,TAU:TAU,glowS:()=>glowS});break;}const dod=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.DodecahedronGeometry(1.1)),new THREE.LineBasicMaterial({color:0xfff8e0,blending:THREE.AdditiveBlending,depthWrite:false}));dod.position.y=.2;g.add(dod);for(let i=0;i<5;i++){const c=new THREE.Color().setHSL(i/5,.9,.65);const o=add(GSPH,M(c.getHex(),c.getHex(),{emissiveIntensity:1.4}),0,0,0,.08);orb.push({m:o,rad:.9+i*.05,sp:1.1+i*.12,ph:i/5*TAU,y:.1+i*.1});}anim.push(t=>{dod.rotation.set(t*.3,t*.4,0);const h=(t*.12)%1;glowS.material.color.setHSL(h,.8,.7);});}
   }
   if(tier>=12)for(let i=0;i<3;i++)add(GCONE,glow,0,.5-i*.02,-.2-i*.28,.06,.26+i*.05,.06,-.5);
   if(tier>=16)for(let i=0;i<5;i++){const a=i/5*TAU;add(GCONE,glow,Math.cos(a)*.2,hy+.42,hz+Math.sin(a)*.2,.04,.2,.04);}
@@ -1532,17 +1544,20 @@ function updateMobs(dt,t){
       const dx=P.x-m.x,dz=P.z-m.z,d=Math.hypot(dx,dz)||1;
       /* Jagd mit Vorhalt: der Boss zielt auf die Position, an der du bald sein wirst, und dreht fast verzögerungsfrei.
          Wer dicht vor ihm im Kreis läuft oder nicht wegrennt, wird angesprungen (kurzer Sprint). Gerade Flucht bleibt möglich. */
+      const fxM=AREAFX[m.a];if(fxM&&fxM.mobPre)fxM.mobPre(m,dt,t,FXAPI,{dx:dx,dz:dz,d:d});
       const pv=Math.hypot(P.vx,P.vz),away=(P.vx*dx+P.vz*dz)/d;
       m.cd=(m.cd||0)-dt;let sp=m.v;
       if(m.lunge>0){m.lunge-=dt;sp=m.v*1.4;}
       else if(d<8&&m.cd<=0&&away<.7*Math.max(pv,2)){m.lunge=.7;m.cd=3.5;ring(m.x,.1,m.z,C.eye,6,.4);beep(120,.25,'sawtooth',.07,.6);}
       const lead=Math.min(d/m.v,1.1)*.9,ax=P.x+P.vx*lead,az=clamp(P.z+P.vz*lead,-HW+1,HW-1),ddx=ax-m.x,ddz=az-m.z,dd=Math.hypot(ddx,ddz)||1;
-      const k=Math.min(1,dt*12);m.vx+=(ddx/dd*sp-m.vx)*k;m.vz+=(ddz/dd*sp-m.vz)*k;
+      const k=Math.min(1,dt*12);
+      if(m.freeze>0){m.freeze-=dt;m.vx*=Math.max(0,1-dt*10);m.vz*=Math.max(0,1-dt*10);}else{m.vx+=(ddx/dd*sp-m.vx)*k;m.vz+=(ddz/dd*sp-m.vz)*k;}
       m.x+=m.vx*dt;m.z=clamp(m.z+m.vz*dt,-HW+1.2,HW-1.2);mv=Math.hypot(m.vx,m.vz);
+      if(fxM&&fxM.mobPost)fxM.mobPost(m,dt,t,FXAPI,{d:d});
       m.g.position.set(m.x,0,m.z);
       let da=Math.atan2(m.vx,m.vz)-m.rot;da=Math.atan2(Math.sin(da),Math.cos(da));m.rot+=da*Math.min(1,dt*6);m.g.rotation.y=m.rot;
       m.step+=dt;if(m.step>.12){m.step=0;burstFx(m.x,.2,m.z,0x9a8a7a,4,3,2,.7);}
-      if(d<1.0+C.s*.95){die();return;}
+      if(d<1.0+C.s*.95&&!m.noKill){die();return;}
       if(d<35)addShake(dt*(1-d/35)*.9);
       if(Math.random()<dt*20*qf())emit(m.x+rand(-1,1)*C.s,rand(.5,3)*C.s,m.z+rand(-1,1)*C.s,rand(-1,1),rand(.5,2),rand(-1,1),C.eye,.7,0);
     }
@@ -1578,6 +1593,7 @@ function toast(t,kind){
 let started=false;
 const netDirty={};
 function pickEgg(e,i){
+  {const fxP=AREAFX[e.a];if(fxP&&fxP.pick)fxP.pick(e,FXAPI);}
   carried.push({r:e.r,a:e.a});S.eggFound[e.r]++;
   burstFx(e.x,1.2,e.z,RAR[e.r].col,18+e.r*10,6+e.r,6,.9);ring(e.x,.1,e.z,RAR[e.r].col,3+e.r*.8,.6);
   if(e.r>=3){addShake(.08+e.r*.02);}
@@ -3203,7 +3219,9 @@ function updatePlayer(dt){
   let ix=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+joy.x;
   let iy=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0)+joy.y;
   const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m;}
-  const sp=speedEff(),tx=(fx*iy+rx*ix)*sp,tz=(fz*iy+rz*ix)*sp,k=1-Math.exp(-14*dt);
+  const ctl={ix:ix,iy:iy,sp:speedEff()};{const fxI=AREAFX[areaIdx(P.x)];if(fxI&&fxI.input)fxI.input(ctl,dt,FXAPI);}
+  ix=ctl.ix;iy=ctl.iy;
+  const sp=ctl.sp,tx=(fx*iy+rx*ix)*sp,tz=(fz*iy+rz*ix)*sp,k=1-Math.exp(-14*dt);
   P.vx+=(tx-P.vx)*k;P.vz+=(tz-P.vz)*k;P.x+=P.vx*dt;P.z+=P.vz*dt;
   P.x=Math.min(P.x,END-1.2);
   if(P.x<.6){const dd=Math.hypot(P.x,P.z),lim=LOBBY_RH-1.4;if(P.x<0&&dd>lim){P.x*=lim/dd;P.z*=lim/dd;}
@@ -3220,6 +3238,9 @@ function updateEggs(dt){
   for(let i=0;i<eggs.length;i++){
     const e=eggs[i];
     if(Math.abs(P.x-e.x)>150){if(e.g.visible)e.g.visible=false;continue;}
+    {const fxE=AREAFX[e.a];if(fxE&&fxE.egg)fxE.egg(e,dt,time,FXAPI);}
+    if(e.hidden){if(e.g.visible)e.g.visible=false;if(e.dot.style.display!=='none')e.dot.style.display='none';continue;}
+    if(e.dot.style.display==='none')e.dot.style.display='';
     if(!e.g.visible)e.g.visible=true;
     if(!e.built)buildEggModel(e);
     if(started){const d=Math.hypot(P.x-e.x,P.z-e.z);if(d<bd){bd=d;nearEgg=i;}}
@@ -3261,7 +3282,9 @@ function updateCamera(dt){
   if(sh>.0005){camera.position.x+=(Math.random()-.5)*sh*2.2;camera.position.y+=(Math.random()-.5)*sh*2.2;camera.position.z+=(Math.random()-.5)*sh*2.2;camera.rotation.z+=(Math.random()-.5)*sh*.08;}
   trauma=Math.max(0,trauma-dt*.9);
   const tf=58+clamp((P.spd||0)-8,0,50)*.4;
-  camera.fov+=(tf-camera.fov)*Math.min(1,dt*4);camera.updateProjectionMatrix();
+  camera.fov+=(tf-camera.fov)*Math.min(1,dt*4);
+  {const fxC=AREAFX[areaIdx(P.x)];if(fxC&&fxC.cam)fxC.cam(camera,dt,FXAPI);}
+  camera.updateProjectionMatrix();
 }
 
 /* ---------- HUD ---------- */
@@ -3272,7 +3295,7 @@ let lastArea=-99;
 function renderAreaBox(i){
   if(i<0){$('areaBox').innerHTML='<div class="an">Dein Plot</div><div class="as">Sicher vor allen Bossen. Hier schlüpfen deine Eier und deine Haustiere laufen herum.</div>';return;}
   const A=AREAS[i],od=oddsFor(i),mode=od.indexOf(Math.max.apply(null,od));
-  $('areaBox').innerHTML='<div class="arow"><span class="an">Gebiet '+(i+1)+': '+A.name+'</span><span class="luck">Glück ×'+fmtD(A.luck)+'</span></div><div class="odds">'+od.map((p,r)=>[p,r]).filter(x=>x[0]>=.01).sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>'<span style="--c:'+RAR[x[1]].css+'" title="'+RAR[x[1]].name+'"><i></i>'+fmtPct(x[0])+'</span>').join('')+'</div><div class="as">Boss: '+A.mob.name+' · '+fmtV(A.v)+' · häufigstes Ei: '+RAR[mode].name+'</div>';
+  $('areaBox').innerHTML='<div class="arow"><span class="an">Gebiet '+(i+1)+': '+A.name+'</span><span class="luck">Glück ×'+fmtD(A.luck)+'</span></div><div class="odds">'+od.map((p,r)=>[p,r]).filter(x=>x[0]>=.01).sort((a,b)=>b[1]-a[1]).slice(0,8).map(x=>'<span style="--c:'+RAR[x[1]].css+'" title="'+RAR[x[1]].name+'"><i></i>'+fmtPct(x[0])+'</span>').join('')+'</div><div class="as">'+(A.ruleShort?'<b style="color:#ffd7b0">'+A.ruleShort+'</b> · ':'')+'Boss: '+A.mob.name+' · '+fmtV(A.v)+' · häufigstes Ei: '+RAR[mode].name+'</div>';
 }
 function updateHUD(){
   setT('money','$'+fmt(S.money));setT('income','+'+fmt(incomeVal)+'/s');
@@ -3402,7 +3425,7 @@ function renderIdx(){
       if(!tierFound(t))return;
       const T=tierAreas[t],n=SPECIES.filter(s=>s.r===t),got=n.filter(s=>S.dex[SPECIES.indexOf(s)]).length,im=thumbOf('e',t,0);
       const where=T.min<0?'Extrem selten (am besten in Gebiet '+(T.best+1)+': '+fmtPct(T.bp)+')':'Gebiet '+(T.min+1)+(T.max>T.min?' bis '+(T.max+1):'')+' · am häufigsten in Gebiet '+(T.best+1)+' ('+fmtPct(T.bp)+')';
-      h+='<div class="irow on" style="--c:'+r.css+'">'+(im?'<img class="thumb" src="'+im+'" alt="">':'<span class="egg"></span>')+'<div class="t"><b>'+(t+1)+'. '+r.name+'</b><small>'+EGGDESC[t]+'</small><small>Brutzeit '+Math.round(r.hatch)+' s · Haustiere +'+fmt(r.mps*.85)+' bis +'+fmt(r.mps*1.25)+'/s</small><small>'+where+'</small></div><div class="st">Tiere<br>'+got+'/'+n.length+'</div></div>';
+      h+='<div class="irow on" style="--c:'+r.css+'">'+(im?'<img class="thumb" src="'+im+'" alt="">':'<span class="egg"></span>')+'<div class="t"><b>'+(t+1)+'. '+r.name+'</b><small>'+(EGGDESC[t]||r.desc||'')+'</small><small>Brutzeit '+Math.round(r.hatch)+' s · Haustiere +'+fmt(r.mps*.85)+' bis +'+fmt(r.mps*1.25)+'/s</small><small>'+where+'</small></div><div class="st">Tiere<br>'+got+'/'+n.length+'</div></div>';
     });
     if(!h)h='<p class="empty">Noch kein Ei gefunden.</p>';
     else if(eggsF<NR)h+='<p class="empty">Noch '+(NR-eggsF)+' unbekannte Eier.</p>';
@@ -3611,6 +3634,22 @@ async function netInit(){
   }catch(e){}
 }
 
+/* ---------- Gebiets-Besonderheiten (AREAFX) ---------- */
+const FXAPI={get P(){return P;},mobs:mobs,eggs:eggs,HW:HW,AX:AX,ALEN:ALEN,AREAS:AREAS,RAR:RAR,keys:keys,scene:scene,camera:camera,clamp:clamp,rand:rand,pick:pick,
+  toast:toast,addShake:addShake,ring:ring,burstFx:burstFx,emit:emit,beep:beep,flashScreen:flashScreen,slowmo:slowmo,beam:beam,die:()=>die(),areaIdx:areaIdx,qf:qf,gTex:gTex,
+  get time(){return time;},get yaw(){return yaw;},set yaw(v){yaw=v;},get pitch(){return pitch;},set pitch(v){pitch=v;},get joy(){return joy;},get carried(){return carried;},get started(){return started;},
+  get mob(){return mobs[0]||null;}};
+let fxLast=-2;const fxSeen={};
+function fxTick(dt){
+  const ai=areaIdx(P.x);
+  if(ai!==fxLast){
+    const o=AREAFX[fxLast];if(o&&o.leave)o.leave(FXAPI);
+    fxLast=ai;const n=AREAFX[ai];if(n&&n.enter)n.enter(FXAPI);
+    if(ai>=0&&AREAS[ai].rule&&!fxSeen[ai]){fxSeen[ai]=1;toast(AREAS[ai].rule,'good');}
+  }
+  const f=AREAFX[ai];if(f&&f.tick)f.tick(dt,time,FXAPI);
+}
+
 /* ---------- Hauptschleife ---------- */
 let lastT=performance.now(),saveT=0;
 const flashEl=$('flash');
@@ -3619,7 +3658,7 @@ function frame(now){
   const dtr=Math.min(.05,(now-lastT)/1000);lastT=now;
   if(slowT>0){slowT-=dtr;if(slowT<=0)timeScale=1;}
   const dt=dtr*timeScale;time+=dt;
-  if(started){updatePlayer(dt);checkPlot();updateMobs(dt,time);}
+  if(started){updatePlayer(dt);checkPlot();updateMobs(dt,time);fxTick(dt);}
   else if(!started){P.vx=P.vz=0;P.spd=0;}
   updateEggs(dt);
   if(started){S.money+=incomeVal*dtr;updatePads();saveT+=dtr;if(saveT>5){saveT=0;save();}}
@@ -3643,6 +3682,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
 
 /* ---------- Start ---------- */
 function boot(){
+  document.querySelectorAll('.nA').forEach(e=>e.textContent=NAREAS);document.querySelectorAll('.nP').forEach(e=>e.textContent=SPECIES.length);
   buildWorld();buildMinimap();initPost();
   if(Q===2&&!composer)Q=1;
   applyQuality();setQBtn();
