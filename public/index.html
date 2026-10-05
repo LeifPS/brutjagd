@@ -599,7 +599,46 @@ function buildDeco(a){
     m.compose(pos,q,new THREE.Vector3(s,s*rand(.8,1.6),s));im.setMatrixAt(i,m);
   }
   im.castShadow=false;scene.add(im);
+  if(a<30)buildFlavor(a);
   if(typeof ENV6!=='undefined'&&ENV6[a]){const u=ENV6[a](x0,LEN,A);if(u)envList.push({cx:x0+LEN/2,half:LEN/2,u:u});}
+}
+
+/* ---- Individualität Gebiete 1-30: pro Gebiet eigene Zweit-Deko, Bodenmuster, Schwebe-Partikel; Aufwand steigt mit dem Gebiet ---- */
+function buildFlavor(a){
+  const A=AREAS[a],x0=AX[a],LEN=ALEN[a],q=a/30,hs=(a*2654435761>>>0),R=(()=>{let z=hs||1;return()=>{z^=z<<13;z>>>=0;z^=z>>>17;z^=z<<5;z>>>=0;return z/4294967296;};})();
+  const gl=new THREE.Color(A.glow||0xffffff),var2=(a*7+3)%5,floor=(a*3+1)%4;
+  const m4=new THREE.Matrix4(),qt=new THREE.Quaternion(),eu=new THREE.Euler();
+  /* Zweit-Deko */
+  const geos=[new THREE.ConeGeometry(.35,1,5),new THREE.TorusGeometry(.7,.12,6,14),new THREE.BoxGeometry(1.4,.25,1),new THREE.SphereGeometry(.4,8,6),new THREE.CylinderGeometry(.25,.4,1,6)];
+  const em=[.5,.9,.2,1.2,.4][var2];
+  const mat2=new THREE.MeshStandardMaterial({color:new THREE.Color(A.a).lerp(gl,.5),emissive:gl,emissiveIntensity:em*(.4+q*.8),roughness:.5});
+  const n2=Math.round((8+q*16)*LEN/60),im=new THREE.InstancedMesh(geos[var2],mat2,n2);
+  for(let i=0;i<n2;i++){
+    const sd=R()<.5?-1:1,sc=.8+R()*(1+q*1.2),y=var2===3?1.5+R()*3:var2===1?1.2*sc:.6*sc*(var2===0||var2===4?2:1);
+    eu.set(var2===1?Math.PI/2:0,R()*6.28,var2===2?R()*.5:0);qt.setFromEuler(eu);
+    m4.compose(new THREE.Vector3(x0+3+R()*(LEN-6),y,sd*(HW-1.2-R()*3.2)),qt,new THREE.Vector3(sc,var2===0||var2===4?sc*(1+R()*1.4):sc,sc));im.setMatrixAt(i,m4);
+  }
+  scene.add(im);
+  /* Bodenmuster */
+  if(floor){
+    const fm=new THREE.MeshBasicMaterial({color:gl,transparent:true,opacity:.18+q*.25,depthWrite:false});
+    if(floor===1)for(let x=x0+6;x<x0+LEN-4;x+=6){const m=new THREE.Mesh(GBOX,fm);m.scale.set(2.4,.04,.35);m.position.set(x,.03,0);scene.add(m);}
+    else if(floor===2)for(const sd of[-1,1]){const m=new THREE.Mesh(GBOX,fm);m.scale.set(LEN-8,.04,.3);m.position.set(x0+LEN/2,.03,sd*(HW-2.6));scene.add(m);}
+    else for(let x=x0+10;x<x0+LEN-6;x+=12+(a%3)*3){const m=new THREE.Mesh(new THREE.RingGeometry(3.2,3.5,40),fm);m.rotation.x=-Math.PI/2;m.position.set(x,.03,0);scene.add(m);}
+  }
+  /* Schwebe-Partikel ab Gebiet 8 */
+  if(a>=7){
+    const N=Math.round(14+q*46)*LEN/60|0,pos=new Float32Array(N*3),ph=[];
+    for(let i=0;i<N;i++){pos[i*3]=x0+R()*LEN;pos[i*3+1]=.5+R()*7;pos[i*3+2]=(R()*2-1)*(HW-1);ph.push(R()*6.28);}
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    const pt=new THREE.Points(g,new THREE.PointsMaterial({map:gTex,color:gl,size:.5+q*.4,transparent:true,opacity:.75,depthWrite:false,blending:THREE.AdditiveBlending}));pt.frustumCulled=false;scene.add(pt);
+    envList.push({cx:x0+LEN/2,half:LEN/2,u:{root:pt,upd(t){const p=g.attributes.position.array;for(let i=0;i<N;i++)p[i*3+1]=4+Math.sin(t*.6+ph[i])*3.4;g.attributes.position.needsUpdate=true;}}});
+  }
+  /* Torbögen über dem Gang ab Gebiet 15 (jedes zweite Gebiet) */
+  if(a>=14&&a%2===0){
+    const am=new THREE.MeshStandardMaterial({color:A.wall,emissive:gl,emissiveIntensity:.5,roughness:.6});
+    for(let x=x0+LEN*.25;x<x0+LEN-5;x+=LEN*.25){const m=new THREE.Mesh(new THREE.TorusGeometry(HW-.6,.3,6,24,Math.PI),am);m.position.set(x,5,0);m.scale.y=.35;m.rotation.y=Math.PI/2;scene.add(m);}
+  }
 }
 const envList=[];
 function updateEnv(t,dt){for(const e of envList){const near=Math.abs(P.x-e.cx)<e.half+160;if(e.u.root)e.u.root.visible=near;if(near&&e.u.upd)e.u.upd(t,dt);}}
