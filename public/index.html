@@ -3811,6 +3811,7 @@ const rd1=v=>Math.round(v*10)/10,rd2=v=>Math.round(v*100)/100;
 function newRemote(id){
   const o={id:id,st:{},slot:-1,pl:makePlayerObj('#ffffff','#7a8aa8'),cg:new THREE.Group(),lab:makeLabel(256,64,5.4,1.35),keys:{},
            x:0,z:0,tx:0,tz:0,rot:0,trot:0,spd:0,have:false,mobs:[],padD:new Array(PADS_N).fill(null),padAt:0};
+  {let hh=0;for(const ch of String(id))hh=(hh*31+ch.charCodeAt(0))>>>0;applyCos(o.pl,[hh%10,(hh>>>4)%10,0,0]);}
   o.lab.position.y=2.9;o.pl.g.add(o.lab);scene.add(o.pl.g);scene.add(o.cg);o.pl.g.visible=false;o.cg.visible=false;
   remotes.set(id,o);return o;
 }
