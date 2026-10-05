@@ -688,8 +688,32 @@ function buildHall(){
     for(const sz of[-GATE_HZ,GATE_HZ]){fenceBox(g,.7,3.2,.7,PLOT_HX,1.6,sz,woodD);const o=new THREE.Mesh(new THREE.SphereGeometry(.38,12,10),new THREE.MeshBasicMaterial({color:SLOTCOL[i]}));o.position.set(PLOT_HX,3.5,sz);g.add(o);}
     fenceBox(g,.35,.5,GATE_HZ*2+.7,PLOT_HX,3.05,0,colM);
     const lab=makeLabel(512,210,12,4.9);const lp=slotW(i,-PLOT_HX+2,0);lab.position.set(lp.x,7.5,lp.z);scene.add(lab);
-    plots.push({s:i,cx:sl.cx,cz:sl.cz,lab:lab,labKey:'',pads:[],herd:null,owner:null,sign:null});
+    plots.push({s:i,cx:sl.cx,cz:sl.cz,lab:lab,labKey:'',pads:[],herd:null,owner:null,sign:null,g:g,fm:fm,colM:colM,dg:new THREE.Group(),defA:'#'+a1.getHexString(),defB:'#'+a2.getHexString(),plKey:''});g.add(plots[plots.length-1].dg);
   });
+}
+const PFLOORS=[['Standard',null,null],['Wiese','#6fd07a','#5cbf68'],['Sand','#f0d9a0','#e3c98a'],['Schnee','#f4fbff','#d6ecf7'],['Lava','#7a3030','#a04a2a'],['Neon','#3a3aa0','#5a2aa0'],['Zuckerwatte','#ffb8e0','#ffd8f0'],['Holz','#b98a58','#9e7444']];
+const PDECO=['Keine','Laternen','Kristalle','Blumen','Sterne','Feuerschalen'],PDECN=[0,0,10,20,40,60];
+function applyPlot(s,cfg){
+  const p=plots[s];if(!p)return;cfg=Array.isArray(cfg)?cfg:[0,10,0];
+  const fl=Math.max(0,Math.min(PFLOORS.length-1,cfg[0]|0)),ac=Math.max(0,Math.min(10,cfg[1]|0)),dc=Math.max(0,Math.min(PDECO.length-1,cfg[2]|0)),key=fl+','+ac+','+dc;
+  if(p.plKey===key)return;p.plKey=key;
+  const F=PFLOORS[fl],a=F[1]||p.defA,b=F[2]||p.defB;
+  if(p.fm.material.map)p.fm.material.map.dispose();
+  p.fm.material.map=checkerTex(a,b,PLOT_HX/2.5,PLOT_HZ/2.5);p.fm.material.needsUpdate=true;
+  const col=new THREE.Color(ac>=10?SLOTCOL[s]:COLS[ac]);p.colM.color.copy(col);p.colM.emissive.copy(col);
+  while(p.dg.children.length){const c=p.dg.children.pop();if(c.geometry&&c.geometry!==GBOX&&c.geometry!==GSPH&&c.geometry!==GCONE)c.geometry.dispose();}
+  if(dc){
+    const pts=[];for(let x=-PLOT_HX+1.6;x<=PLOT_HX-1.6;x+=(PLOT_HX*2-3.2)/4){pts.push([x,-PLOT_HZ+1.6],[x,PLOT_HZ-1.6]);}for(const z of[-PLOT_HZ/2,0,PLOT_HZ/2])pts.push([-PLOT_HX+1.6,z]);
+    const em=(c,e)=>new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:e,roughness:.5});
+    const add=(geo,mt,x,y,z,sx,sy,sz)=>{const m=new THREE.Mesh(geo,mt);m.position.set(x,y,z);m.scale.set(sx,sy,sz);p.dg.add(m);return m;};
+    pts.forEach((q,i)=>{const x=q[0],z=q[1];
+      if(dc===1){add(GBOX,new THREE.MeshStandardMaterial({color:0x3a2a1a}),x,1.1,z,.2,2.2,.2);add(GSPH,em(0xffe8a0,1.6),x,2.4,z,.38,.38,.38);}
+      else if(dc===2){const c=new THREE.Color().setHSL((i*.13)%1,.7,.6);add(new THREE.OctahedronGeometry(1),em(c,.9),x,.9,z,.35,.8+(i%3)*.3,.35);}
+      else if(dc===3){add(GCYL,em(0x3a9a4a,.1),x,.35,z,.06,.7,.06);const c=new THREE.Color().setHSL((i*.19)%1,.8,.65);add(GSPH,em(c,.5),x,.8,z,.3,.3,.3);}
+      else if(dc===4){add(new THREE.OctahedronGeometry(1),em(0xfff0a0,1.5),x,2.4+(i%3)*.5,z,.3,.4,.3);}
+      else if(dc===5){add(GCYL,new THREE.MeshStandardMaterial({color:0x2a2020}),x,.5,z,.5,1,.5);add(GCONE,em(0xff7a1a,1.8),x,1.4,z,.4,.9,.4);}
+    });
+  }
 }
 function setPlotLabel(s,name,mine,inc){
   const p=plots[s],it=name?'+'+fmt(inc||0)+'/s':'',k=name+'|'+mine+'|'+it;if(p.labKey===k)return;p.labKey=k;
@@ -3671,6 +3695,8 @@ function buildMinimap(){
 
 /* ---------- Menüs ---------- */
 function openPanel(id){closePanels();$(id).hidden=false;if(id==='mInv')renderInv();else if(id==='mUp')renderUp();else if(id==='mFig')renderFig();else renderIdx();}
+function myPlot(){if(!Array.isArray(S.plot))S.plot=[0,10,0];return S.plot;}
+function setPlotV(i,v){myPlot()[i]=v;applyPlot(mySlot,S.plot);netDirty.pl=1;save();renderFig();}
 function myCos(){if(!Array.isArray(S.cos))S.cos=[0,1,0,0];return S.cos;}
 function setCosV(i,v){myCos()[i]=v;applyCos(P,S.cos);netDirty.cs=1;save();renderFig();}
 function renderFig(){
@@ -3680,7 +3706,13 @@ function renderFig(){
   h+=row('Mütze',sw(0))+row('Shirt',sw(1));
   h+=row('Kopfschmuck',HATS.map((n,i)=>{const ok=nd>=HATN[i];return '<button class="btn" '+(ok?'data-cs="2:'+i+'"':'disabled style="opacity:.45"')+(c[2]===i&&ok?' style="outline:3px solid var(--gold)"':'')+'>'+n+(ok?'':' · '+HATN[i]+' Haustiere im Index')+'</button>';}).join(''));
   h+=row('Umhang',CAPES.map((n,i)=>{const ok=capeOk(i);return '<button class="btn" '+(ok?'data-cs="3:'+i+'"':'disabled style="opacity:.45"')+(c[3]===i&&ok?' style="outline:3px solid var(--gold)"':'')+'>'+n+(ok?'':' · '+capeHint(i))+'</button>';}).join(''));
-  $('figBody').innerHTML=h;$('figSub').textContent='Mitspieler sehen deine Figur · '+nd+' Haustiere im Index';
+  const pc=myPlot();
+  h+='<hr style="border:0;border-top:1px solid var(--line);width:100%"><div style="font:400 18px var(--display)">Dein Plot</div>';
+  h+=row('Boden',PFLOORS.map((f,i)=>'<button class="btn" data-pl="0:'+i+'"'+(pc[0]===i?' style="outline:3px solid var(--gold)"':'')+'>'+f[0]+'</button>').join(''));
+  h+=row('Zaunfarbe','<button class="btn" data-pl="1:10" style="'+(pc[1]===10?'outline:3px solid var(--gold)':'')+'">Plotfarbe</button>'+COLS.map((col,i)=>'<button class="btn" data-pl="1:'+i+'" style="width:38px;height:38px;padding:0;background:'+col+';'+(pc[1]===i?'outline:3px solid var(--gold)':'')+'" aria-label="Farbe"></button>').join(''));
+  h+=row('Dekoration',PDECO.map((n,i)=>{const ok=nd>=PDECN[i];return '<button class="btn" '+(ok?'data-pl="2:'+i+'"':'disabled style="opacity:.45"')+(pc[2]===i&&ok?' style="outline:3px solid var(--gold)"':'')+'>'+n+(ok?'':' · '+PDECN[i]+' Haustiere im Index')+'</button>';}).join(''));
+  $('figBody').innerHTML=h;$('figSub').textContent='Mitspieler sehen Figur und Plot · '+nd+' Haustiere im Index';
+  $('figBody').querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>{const q=b.dataset.pl.split(':');setPlotV(+q[0],+q[1]);});
   $('figBody').querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{const q=b.dataset.cs.split(':');setCosV(+q[0],+q[1]);});
 }
 function closePanels(){$('mFig').hidden=true;$('mInv').hidden=true;$('mUp').hidden=true;$('mIdx').hidden=true;}
@@ -3825,7 +3857,7 @@ function newRemote(id){
 function dropRemote(id){
   const o=remotes.get(id);if(!o)return;
   scene.remove(o.pl.g);scene.remove(o.cg);o.mobs.forEach(m=>scene.remove(m.g));
-  if(o.slot>=0&&o.slot!==mySlot){setHerd(o.slot,[]);clearPlot(o.slot);}
+  if(o.slot>=0&&o.slot!==mySlot){setHerd(o.slot,[]);clearPlot(o.slot);applyPlot(o.slot,null);}
   remotes.delete(id);refreshPlotLabels();
 }
 function clearPlot(s){const p=plots[s];p.pads.forEach(pd=>showPad(pd,null,Date.now()));}
@@ -3849,6 +3881,7 @@ function applyRemote(id,st){
     setHerd(o.slot,st.pt.filter(q=>Array.isArray(q)&&SPECIES[q[0]]).slice(0,16).map(q=>[q[0]|0,q[1]|0,SPECIES[q[0]].r]));}
   if(k('pd')!==JSON.stringify(prev.pd)&&Array.isArray(st.pd)){
     const now=Date.now();o.padD=st.pd.slice(0,PADS_N).map(q=>Array.isArray(q)&&RAR[q[0]]?{r:q[0],end:now+q[1]*1000,tot:q[2]||RAR[q[0]].hatch}:null);while(o.padD.length<PADS_N)o.padD.push(null);}
+  if(o.slot>=0&&o.slot!==mySlot)applyPlot(o.slot,Array.isArray(st.pl)?st.pl:null);
   if(k('cs')!==JSON.stringify(prev.cs)&&Array.isArray(st.cs)){applyCos(o.pl,st.cs.slice(0,4).map(x=>Math.max(0,Math.min(9,x|0))));}
   if(k('mb')!==JSON.stringify(prev.mb)){syncRemoteMobs(o,Array.isArray(st.mb)?st.mb:[]);}
   o.pl.g.visible=o.have&&o.slot!==-2;o.cg.visible=o.pl.g.visible;
@@ -3902,6 +3935,7 @@ function buildPatch(){
   const set=(k,v)=>{const j=JSON.stringify(v);if(netFull||lastSent[k]!==j){lastSent[k]=j;pt[k]=v;}};
   set('p',p);set('mb',mb);
   if(netFull||netDirty.c){set('c',carried.map(c=>c.r));netDirty.c=0;}
+  if(netFull||netDirty.pl){set('pl',myPlot());netDirty.pl=0;}
   if(netFull||netDirty.cs){set('cs',myCos());netDirty.cs=0;}
   if(netFull||netDirty.pt){set('pt',myHerdList());netDirty.pt=0;}
   if(netFull||netDirty.pd||now-(lastSent.pdAt||0)>15000){lastSent.pdAt=now;lastSent.pd=null;set('pd',S.pads.map(d=>d?[d.r,Math.max(0,Math.round((d.end-now)/1000)),Math.round(d.tot||RAR[d.r].hatch)]:0));netDirty.pd=0;}
@@ -4000,6 +4034,7 @@ const FXAPI={get P(){return P;},mobs:mobs,eggs:eggs,HW:HW,AX:AX,ALEN:ALEN,AREAS:
   get mob(){return mobs[0]||null;}};
 let fxLast=-2;const fxSeen={};
 function fxTick(dt){
+  if(mySlot>=0&&plots[mySlot])applyPlot(mySlot,myPlot());
   const ai=areaIdx(P.x);
   if(ai!==fxLast){
     const o=AREAFX[fxLast];if(o&&o.leave)o.leave(FXAPI);
