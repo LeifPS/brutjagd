@@ -304,7 +304,22 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 <script>
-window.AD7=window.AD7||{};AD7[39]={area:{name:'Test',a:'#333',b:'#222',wall:0x222222,glow:0xff8800,fog:'#101010',deco:{t:'octa',c:0xff8800,e:.5},rule:'Testregel',ruleShort:'Test',mob:{name:'Testboss',kind:'quad',col:'#664422',eye:0xffaa00,s:6.6}},tier:{name:'Testei',col:0xff8800,desc:'x'},pets:[0,1,2,3,4].map(i=>({name:'Tier'+i,col:'#ff8800',desc:''}))};
+window.AD7=window.AD7||{};
+AD7[35]={
+  area:{name:'Prismenreich',a:'#1b1c3e',b:'#151633',wall:0x2b2c5c,glow:0xc8f0ff,fog:'#0b0922',
+    deco:{t:'octa',c:0xd8f0ff,e:1},
+    rule:'Prismenreich: Der Fürst ist bei Rot schnell, bei Violett langsam. Lichtbahnen tragen dich Richtung Plot. Flimmernde Eier sind Trugbilder!',
+    ruleShort:'Lichtbahnen · Farbphasen · Trugbilder',
+    mob:{name:'Prismenfürst',kind:'custom',id:'prismlord',col:'#e8f4ff',eye:0xffffff,s:6.6}},
+  tier:{name:'Prismatisch',col:0xa8e8ff,desc:'Gläsernes Ei mit einem Prisma im Inneren, das einen Lichtstrahl in alle Farben fächert'},
+  pets:[
+    {name:'Lichtkolibri',col:'#bfe6ff',desc:'Flügel aus schwirrenden Kristallsplittern'},
+    {name:'Regenbogenfuchs',col:'#ffb0e0',desc:'Sein Schweif fächert das Licht in Spektralfarben'},
+    {name:'Prismengeist',col:'#e0e8ff',desc:'Kleine Prismen kreisen um ihn und brechen jedes Licht'},
+    {name:'Facettenhirsch',col:'#a0ffe0',desc:'Geschliffene Kristalle als Geweih und Rückenpanzer'},
+    {name:'Glasschildkröte',col:'#ffe0a0',desc:'Unter ihrem Glasdom tanzen Regenbogenfunken'}
+  ]
+};
 
 (function(){
 'use strict';
@@ -459,7 +474,7 @@ const fmtPct=p=>(p>=10?String(Math.round(p)):p>=1?p.toFixed(1).replace('.',','):
 const areaIdx=x=>{if(x<0)return -1;for(let i=NAREAS-1;i>0;i--)if(x>=AX[i])return i;return 0;};
 const maxEggs=a=>Math.round(MAXE*ALEN[a]/60);
 function tierWeights(a){
-  const w=new Array(NR).fill(0),c=a*.95-1;
+  const w=new Array(NR).fill(0),c=a*.95-1+(a>=35?.8:0);
   for(let i=0;i<NR;i++){const d=i-c;w[i]=d<=0?Math.exp(-(d*d)/(2*2.6*2.6)):Math.pow(.22,d);}
   return w;
 }
@@ -1593,7 +1608,7 @@ function toast(t,kind){
 let started=false;
 const netDirty={};
 function pickEgg(e,i){
-  {const fxP=AREAFX[e.a];if(fxP&&fxP.pick)fxP.pick(e,FXAPI);}
+  {const fxP=AREAFX[e.a];if(fxP&&fxP.pick&&fxP.pick(e,FXAPI)===false){removeEgg(i);spawnMob(e.a);return;}}
   carried.push({r:e.r,a:e.a});S.eggFound[e.r]++;
   burstFx(e.x,1.2,e.z,RAR[e.r].col,18+e.r*10,6+e.r,6,.9);ring(e.x,.1,e.z,RAR[e.r].col,3+e.r*.8,.6);
   if(e.r>=3){addShake(.08+e.r*.02);}
@@ -3199,6 +3214,259 @@ EGG6[37]=(g,r)=>{
     if(!thumbMode&&Math.random()<dt*10*qf()){const p=wpos(g);emitS(p.x+rand(-1,1),p.y+rand(-.8,1.4),p.z+rand(-1,1),rand(-.3,.3),rand(.5,1.4),rand(-.3,.3),0xfff4d0,1.4,0);}
   };
 };
+
+/* ===================== Gebiet 36: Prismenreich =====================
+   Besonderheiten: Lichtbahnen (Tempo), Farbphasen (Boss-Tempo), Trugbild-Eier */
+(function(){
+const TAU=Math.PI*2,PI=Math.PI;
+const PH_T=14;                                   /* ein Farbzyklus in Sekunden */
+const phaseHue=t=>((t%PH_T)/PH_T)*.8;            /* 0 = Rot ... .8 = Violett */
+const phaseSpd=t=>1.09-.17*(phaseHue(t)/.8);     /* Rot 1,09 ... Violett 0,92 */
+const LANE_W=3.6;
+const laneZ=(k,t)=>(k-1)*6.3+Math.sin(t*.15+k*2.3)*2.1;
+const laneDir=k=>k===1?1:-1;                      /* Bahnen 0 und 2 fließen zum Plot (-x), Bahn 1 zum Gebietsende (+x) */
+const hsl=(h,s,l)=>new THREE.Color().setHSL(((h%1)+1)%1,s,l);
+const rainbowGLSL='vec3 rb(float v){return .5+.5*cos(6.28318*(v+vec3(0.,.33,.67)));}\n';
+
+/* ---------- Texturen ---------- */
+function facetTex(key,w,h,seed,alpha){
+  return ecache(key,()=>{const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d'),r=E6.rng(seed);
+    const g=x.createLinearGradient(0,0,w,h);for(let i=0;i<=6;i++)g.addColorStop(i/6,'hsl('+(i*52)%360+',70%,62%)');x.fillStyle=g;x.fillRect(0,0,w,h);
+    for(let i=0;i<46;i++){const px=r()*w,py=r()*h,s=26+r()*70,a=r()*TAU;x.beginPath();x.moveTo(px,py);x.lineTo(px+Math.cos(a)*s,py+Math.sin(a)*s);x.lineTo(px+Math.cos(a+2.1)*s*.9,py+Math.sin(a+2.1)*s*.9);x.closePath();
+      x.fillStyle='hsla('+Math.floor(r()*360)+',80%,'+(48+r()*30)+'%,'+(alpha||.55)+')';x.fill();x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=1.5;x.stroke();}
+    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=2;return t;});
+}
+
+/* ===================== Landschaft ===================== */
+ENV6[35]=(x0,len,A)=>{
+  const root=new THREE.Group();scene.add(root);const cx=x0+len/2,R=E6.rng(3601);
+  /* Gelände: Dünen aus dunklem Glas, in Facetten gebrochen, schillernd */
+  const hf=(x,z)=>{const d=Math.abs(z),a=E6.sstep(14,90,d);
+    const dune=Math.abs(Math.sin(x*.018+d*.03))*11+Math.abs(Math.sin(x*.043-d*.05+1.7))*5.5;
+    const fac=Math.round(Math.sin(x*.21+d*.17)*2)*.45;
+    return a*(dune+fac*2.2)+E6.sstep(0,9,d-11)*(1-a)*(.5+.45*Math.sin(x*.2));};
+  const ter=E6.terrain(root,x0,len,{hfn:hf,step:3,colfn:(h,x,z,c)=>{
+      const hue=(((x*.0034+Math.abs(z)*.0046)%1)+1)%1;c.setHSL(hue,.42,.07+Math.min(.2,Math.max(0,h)*.011)+.035*Math.sin(x*.7)*Math.sin(z*.6));},
+    mat:{flatShading:true,roughness:.3,metalness:.55,emissive:0x0c0a22,emissiveIntensity:.7}});
+  /* Schillernder Boden im Gang: Dünnschicht-Farben + Lichtbahnen */
+  const fvs='varying vec3 vP;void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
+  const ffs='uniform float t;uniform float ph;varying vec3 vP;\n'+rainbowGLSL+
+    'void main(){float v=.5+.5*sin(vP.x*.05+vP.z*.14+t*.35+sin(vP.z*.55+t*.3)*1.7);float c=pow(.5+.5*sin(vP.x*.9+t*.5)*sin(vP.z*1.1-t*.4),6.);\n'+
+    ' vec3 col=rb(v*.7+ph)*.16+vec3(.7,.8,1.)*c*.12;gl_FragColor=vec4(col,1.);}';
+  const fg=new THREE.PlaneGeometry(len,19.7);fg.rotateX(-PI/2);fg.translate(cx,.05,0);
+  const fm=E6.mat(fvs,ffs,{t:{value:0},ph:{value:0}});const fl=new THREE.Mesh(fg,fm);fl.frustumCulled=false;root.add(fl);
+  const lvs='varying vec2 vU;varying float vX;uniform float x0;uniform float L;void main(){vU=uv;vX=position.x+x0+L*.5;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
+  const lfs='uniform float t;uniform float dir;uniform float hue;uniform float op;varying vec2 vU;varying float vX;\n'+rainbowGLSL+
+    'void main(){float y=abs(vU.y-.5)*2.;float s=vX*dir;float p=(s+y*3.2)*.075-t*.8;float b=smoothstep(.0,.06,fract(p))*(1.-smoothstep(.2,.3,fract(p)));\n'+
+    ' float edge=1.-smoothstep(.55,1.,y);float rim=smoothstep(.82,.96,y)*(1.-smoothstep(.96,1.,y))*.7;\n'+
+    ' vec3 col=rb(hue)*(b*edge*1.2+rim+.1*edge);gl_FragColor=vec4(col*op,1.);}';
+  const lanes=[];
+  for(let k=0;k<3;k++){const g=new THREE.PlaneGeometry(len,LANE_W);g.rotateX(-PI/2);
+    const m=E6.mat(lvs,lfs,{t:{value:0},dir:{value:laneDir(k)},hue:{value:0},op:{value:.85},x0:{value:x0},L:{value:len}});
+    const me=new THREE.Mesh(g,m);me.position.set(0,.09,0);me.frustumCulled=false;me.position.x=cx;root.add(me);lanes.push(me);}
+  /* Himmel: Sterne, zwei Sonnen, Phasen-Schimmer */
+  const st=E6.stars(root,E6.qn(900),430,3601,[[.9,.9,1],[1,.95,.8],[.8,1,1],[1,.8,1]],3);
+  const sunA=glowSprite(0xffd890,520,.9),sunB=glowSprite(0x80f0ff,380,.8);sunA.material.fog=false;sunB.material.fog=false;root.add(sunA,sunB);
+  const haze=glowSprite(0xffffff,900,.5);haze.material.fog=false;root.add(haze);
+  /* Prismen am Horizont: ein weißer Strahl wird zum Spektrum */
+  const prismG=[];
+  const PRG=new THREE.CylinderGeometry(1,1,1,3,1,false);
+  const beamGradTex=E6.tex(16,128,(x,w,h)=>{const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(.18,'rgba(255,255,255,.95)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,w,h);});
+  const mkPrism=(sz,z,y,xo,ph)=>{
+    const g=new THREE.Group(),glass=new THREE.Mesh(PRG,new THREE.MeshBasicMaterial({color:0xcfe8ff,transparent:true,opacity:.22,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide}));
+    glass.scale.set(sz,sz*1.7,sz);glass.rotation.z=PI/2;g.add(glass);
+    const ed=new THREE.LineSegments(new THREE.EdgesGeometry(PRG),new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));ed.scale.copy(glass.scale);ed.rotation.copy(glass.rotation);g.add(ed);
+    const inb=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:beamGradTex,color:0xffffff,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide}));
+    inb.scale.set(sz*7,sz*.16,1);inb.position.set(-sz*3.8,0,0);g.add(inb);
+    const fan=[];for(let i=0;i<7;i++){const b=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:beamGradTex,color:hsl(i/7*.8,.9,.6),transparent:true,opacity:.6,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide}));
+      const pv=new THREE.Group();pv.add(b);b.scale.set(sz*26,sz*.34,1);b.position.set(sz*13,0,0);g.add(pv);fan.push(pv);}
+    g.position.set(xo,y,z);g.userData={fan:fan,glass:glass,ed:ed,xo:xo,ph:ph,y:y,sz:sz};root.add(g);prismG.push(g);return g;};
+  mkPrism(34,-150,70,520,0);mkPrism(24,170,52,470,2.1);
+  /* Spiegelscheiben in der Luft */
+  const paneTex=facetTex('p36pane',256,256,77,.6);
+  const nP=E6.qn(70),paneM=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1.6),new THREE.MeshBasicMaterial({map:paneTex,transparent:true,opacity:.38,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}),nP);
+  paneM.instanceMatrix.setUsage(THREE.DynamicDrawUsage);paneM.frustumCulled=false;root.add(paneM);const pd=[];
+  for(let i=0;i<nP;i++){const s=R()<.5?-1:1;pd.push({x:x0+R()*len,y:5+R()*34,z:s*(15+R()*95),sz:2.4+R()*7,rx:R()*TAU,ry:R()*TAU,sp:.1+R()*.35,ph:R()*TAU});}
+  /* Obelisken aus Glas */
+  const nO=E6.qn(30),obM=new THREE.InstancedMesh(new THREE.OctahedronGeometry(1,0),new THREE.MeshStandardMaterial({color:0xcfe0ff,emissive:0x6a5cff,emissiveIntensity:.6,roughness:.12,metalness:.5,flatShading:true,transparent:true,opacity:.82}),nO);
+  const _m=new THREE.Matrix4(),_q=new THREE.Quaternion(),_e=new THREE.Euler(),_p=new THREE.Vector3(),_s=new THREE.Vector3();
+  for(let i=0;i<nO;i++){const s=i%2?-1:1,x=x0+6+R()*(len-12),z=s*(14+R()*55),h=5+R()*22,w=.9+R()*2.4,y=ter.hAt(x,z,s);
+    _e.set(0,R()*TAU,(R()-.5)*.25);_q.setFromEuler(_e);_p.set(x,Math.max(y,0)+h*.9,z);_s.set(w,h,w);_m.compose(_p,_q,_s);obM.setMatrixAt(i,_m);obM.setColorAt&&obM.setColorAt(i,hsl(R(),.55,.7));}
+  if(obM.instanceColor)obM.instanceColor.needsUpdate=true;root.add(obM);
+  /* Funkelstaub */
+  const du=E6.points(root,E6.qn(800),.4,{op:.9}),dv=new Float32Array(du.n);
+  for(let i=0;i<du.n;i++){du.pos[i*3]=x0+R()*len;du.pos[i*3+1]=.3+R()*13;du.pos[i*3+2]=(R()-.5)*80;dv[i]=.3+R()*1.1;const c=hsl(R()*.85,.8,.65);du.col[i*3]=c.r;du.col[i*3+1]=c.g;du.col[i*3+2]=c.b;}
+  const sky=[],fr0={n:0};sky.push(st.p,sunA,sunB,haze,...prismG,paneM);let skyOn=true;
+  const gate=()=>{const o=P.x>=x0-4&&P.x<=x0+len+4;if(o!==skyOn){skyOn=o;for(const q of sky)q.visible=o;}return o;};
+  return {root:root,upd(t,dt){
+    fr0.n++;const px=P.x,hue=phaseHue(t);gate();
+    fm.uniforms.t.value=t;fm.uniforms.ph.value=hue;
+    for(let k=0;k<3;k++){const m=lanes[k];m.position.z=laneZ(k,t);m.material.uniforms.t.value=t;m.material.uniforms.hue.value=hue+k*.11;}
+    st.p.position.x=px;st.tw(t);
+    sunA.position.set(px+700,62,-190);sunB.position.set(px+640,44,170);
+    haze.position.set(px+800,40,0);haze.material.color.copy(hsl(hue,.8,.62));haze.material.opacity=.32+.1*Math.sin(t*.7);
+    for(const g of prismG){const u=g.userData;g.position.set(px+u.xo,u.y+Math.sin(t*.2+u.ph)*3,g.position.z);g.rotation.x=t*.12+u.ph;
+      u.fan.forEach((pv,i)=>{pv.rotation.y=-.16+i*.045+Math.sin(t*.3+u.ph)*.08;pv.rotation.z=(i-3)*.05+Math.sin(t*.4+i*.5)*.02;});}
+    if(!(fr0.n&1)){for(let i=0;i<nP;i++){const d=pd[i];_e.set(d.rx+t*d.sp*.5,d.ry+t*d.sp,0);_q.setFromEuler(_e);_p.set(d.x+Math.sin(t*.15+d.ph)*2,d.y+Math.sin(t*.4+d.ph)*1.4,d.z);_s.set(d.sz,d.sz,d.sz);_m.compose(_p,_q,_s);paneM.setMatrixAt(i,_m);}paneM.instanceMatrix.needsUpdate=true;}
+    obM.material.emissive.copy(hsl(hue,.8,.45));
+    const pp=du.pos;for(let i=0;i<du.n;i++){pp[i*3+1]+=dv[i]*dt;pp[i*3]+=Math.sin(t*.5+i)*dt*.4;if(pp[i*3+1]>14)pp[i*3+1]=.3;}
+    du.g.attributes.position.needsUpdate=true;
+  }};
+};
+
+/* ===================== Boss: Prismenfürst ===================== */
+(function(){
+const TXC={};
+function mk(geo,mat,par,x,y,z,sx,sy,sz,rx,ry,rz){const m=new THREE.Mesh(geo,mat);m.position.set(x||0,y||0,z||0);if(sx!==undefined)m.scale.set(sx,sy===undefined?sx:sy,sz===undefined?sx:sz);if(rx||ry||rz)m.rotation.set(rx||0,ry||0,rz||0);par.add(m);return m;}
+function grp(par,x,y,z){const g=new THREE.Group();g.position.set(x||0,y||0,z||0);par.add(g);return g;}
+function gl(par,col,s,op,x,y,z){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:gTex,color:col,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false}));sp.scale.set(s,s,1);sp.position.set(x||0,y||0,z||0);par.add(sp);return sp;}
+MOB6.prismlord=function(C,inner,H){
+  const K=.95,root=grp(inner,0,0,0);root.scale.setScalar(K);
+  const OCT=new THREE.OctahedronGeometry(1,0),ICO=new THREE.IcosahedronGeometry(1,0);
+  const bft=facetTex('b36',256,256,361,.7);const glassM=()=>new THREE.MeshStandardMaterial({map:bft,color:0xf4f8ff,emissiveMap:bft,emissive:0xff4040,emissiveIntensity:.75,roughness:.08,metalness:.35,flatShading:true,transparent:true,opacity:.86});
+  const glass=glassM(),glass2=glassM(),shardM=[];
+  const fig=grp(root,0,1.2,0);
+  /* Rumpf: gestreckter Kristall, nach unten zur Spitze verjüngt */
+  const torso=grp(fig,0,1.6,0);
+  mk(ICO,glass,torso,0,.15,0,1.15,1.9,.95);
+  mk(OCT,glass2,fig,0,.1,0,.8,1.6,.7,PI,0,0);
+  for(const s of[-1,1]){mk(OCT,glass2,torso,s*1.35,1.15,0,.6,.5,.5,0,0,s*.6);mk(OCT,glass,torso,s*1.5,1.45,0,.3,.7,.26,0,0,s*.3);}
+  const core=mk(OCT,new THREE.MeshBasicMaterial({color:0xffffff}),torso,0,.2,0,.28,.45,.28);
+  const coreG=gl(torso,0xffffff,3.2,.55,0,.2,0);
+  /* Kopf: Spiegelmaske mit Augen und Strahlenkrone */
+  const head=grp(fig,0,3.95,.05);
+  mk(OCT,glass,head,0,0,0,.62,.8,.5);
+  const eyeM=new THREE.MeshBasicMaterial({color:0xffffff});
+  for(const s of[-1,1]){mk(OCT,eyeM,head,s*.19,.08,.3,.12,.05,.05,0,0,s*.4);gl(head,0xffffff,.8,.5,s*.19,.08,.34);}
+  const crown=grp(head,0,.45,0),cr=[];
+  for(let i=0;i<9;i++){const a=(i-4)/4,L=.7+.55*(1-Math.abs(a)),pv=grp(crown);pv.rotation.z=-a*.95;
+    const m=new THREE.MeshBasicMaterial({color:hsl(i/9*.8,.85,.62),transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false});mk(GCONE,m,pv,0,L*.5+.1,0,.1,L,.1);cr.push({pv:pv,a:a,m:m});}
+  const wheel=grp(head,0,.1,-.9),wh=[];for(let i=0;i<14;i++){const a=i/14*TAU,pv=grp(wheel);pv.rotation.z=a;const m=new THREE.MeshBasicMaterial({color:hsl(i/14*.8,.9,.62),transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});mk(OCT,m,pv,0,2.4+(i%2)*.7,0,.16,1.15+(i%2)*.5,.05);wh.push(m);}
+  const halo=mk(new THREE.TorusGeometry(.55,.035,6,40),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.8,blending:THREE.AdditiveBlending}),head,0,.75,-.1,1,1,1,PI/2);
+  /* Arme: drei Kristallsegmente + Handsplitter */
+  const arms=[];
+  for(const s of[-1,1]){const sh=grp(fig,s*1.55,3.5,0),up=grp(sh);mk(OCT,glass,up,0,-.6,0,.3,.78,.26);mk(OCT,glass2,sh,0,0,0,.22,.22,.22);
+    const el=grp(up,0,-1.3,0);mk(OCT,glass,el,0,-.55,0,.24,.7,.22);const hand=grp(el,0,-1.2,0);
+    for(let f=-1;f<=1;f++)mk(OCT,glass2,hand,f*.22,-.25,0,.1,.5,.1,0,0,f*.3);gl(hand,0xffffff,.9,.35,0,-.1,0);arms.push({sh:sh,el:el,hand:hand,s:s});}
+  /* Spektral-Mantel: sieben Lichtbahnen hinter ihm */
+  const cloak=[];
+  for(let i=0;i<9;i++){const pv=grp(fig,(i-4)*.26,3.4,-.7),m=new THREE.MeshBasicMaterial({color:hsl(i/7*.8,.9,.58),transparent:true,opacity:.62,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+    mk(GCONE,m,pv,0,-2.0,-.5,.3,4.3,.07,0,0,0);cloak.push({pv:pv,i:i,m:m});}
+  /* Umkreisende Splitter */
+  const orb=[];
+  for(let i=0;i<12;i++){const sm=new THREE.MeshStandardMaterial({color:0xffffff,emissive:hsl(i/12*.8,.9,.5),emissiveIntensity:.9,roughness:.1,metalness:.3,flatShading:true,transparent:true,opacity:.9});shardM.push(sm);
+    const m=mk(OCT,sm,fig,0,0,0,.3+.15*(i%3),.8+.3*(i%2),.22);orb.push({m:m,r:2.7+(i%4)*.45,y:1.2+(i%5)*.9,sp:.5+.12*(i%4)*(i%2?-1:1),ph:i/12*TAU});}
+  /* Ringe am Boden */
+  const rings=[];for(let i=0;i<4;i++){const m=new THREE.MeshBasicMaterial({color:hsl(i*.2,.9,.6),transparent:true,opacity:.5,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+    const r=mk(new THREE.RingGeometry(1.6+i*.75,1.72+i*.75,48),m,root,0,.12,0,1,1,1,-PI/2);rings.push({r:r,m:m});}
+  const aura=gl(root,0xcfe8ff,9,.12,0,3.4,0);
+  const tmpC=new THREE.Color();let wph=0;
+  return{limbs:[],tents:[],upd(t,mv,dt,m){
+    dt=Math.min(dt,.05);const sp=Math.min(mv,60),run=Math.min(sp/30,1);wph+=dt*(1.4+sp*.07);
+    const hue=phaseHue(t);tmpC.setHSL(hue,.9,.55);
+    glass.emissive.copy(tmpC);glass2.emissive.copy(tmpC);glass.emissiveIntensity=.5+.25*Math.sin(t*2);
+    eyeM.color.setHSL(hue,.6,.85);coreG.material.color.setHSL(hue,.8,.7);aura.material.color.setHSL(hue,.7,.6);
+    fig.position.y=1.2+.18*Math.sin(t*1.3)+run*.08*Math.sin(wph*2);root.rotation.x=run*.2;fig.rotation.y=Math.sin(t*.5)*.1;
+    torso.rotation.y=t*.3;core.rotation.y=-t*1.1;core.scale.setScalar(.3*(1+.18*Math.sin(t*3)));coreG.scale.set(3.2+.5*Math.sin(t*3),3.2+.5*Math.sin(t*3),1);
+    wheel.rotation.z=t*.25;for(let i=0;i<wh.length;i++)wh[i].color.setHSL((hue+i/14*.7)%1,.9,.62);head.rotation.y=Math.sin(t*.7)*.2;head.rotation.x=run*.12;halo.rotation.z=t*.7;
+    for(const c of cr){c.pv.rotation.z=-c.a*.95+.05*Math.sin(t*1.6+c.a*3);c.m.color.setHSL(hue+(c.a+1)*.1,.85,.62);}
+    for(const a of arms){const br=Math.sin(wph*.9+(a.s>0?0:.7));a.sh.rotation.z=a.s*(.5+.12*br+run*.45);a.sh.rotation.x=-.2-run*.7;a.el.rotation.z=a.s*(.35+.1*Math.sin(wph*1.1));a.hand.rotation.y=t*2;}
+    for(const c of cloak){c.pv.rotation.x=.35+run*.65+.12*Math.sin(wph*1.4+c.i*.8);c.pv.rotation.z=(c.i-3)*.08+.1*Math.sin(wph*1.1+c.i);c.m.color.setHSL(((c.i/7)*.8+t*.05)%1,.9,.58);}
+    for(let i=0;i<orb.length;i++){const o=orb[i],a=t*o.sp+o.ph;o.m.position.set(Math.cos(a)*o.r,o.y+Math.sin(t*1.7+i)*.18,Math.sin(a)*o.r);o.m.rotation.set(t*1.3+i,t*.9,0);shardM[i].emissive.setHSL((hue+i/12*.5)%1,.9,.5);}
+    for(let i=0;i<rings.length;i++){rings[i].r.rotation.z=t*(.25+i*.1)*(i%2?-1:1);rings[i].m.color.setHSL((hue+i*.12)%1,.9,.6);rings[i].m.opacity=.34+.18*Math.sin(t*2+i);}
+    /* Funken in den Bossfarben */
+    if(Math.random()<dt*34*qf()){const a=Math.random()*TAU,rr=Math.random()*C.s*1.0;tmpC.setHSL((hue+Math.random()*.3)%1,.9,.65);
+      emit(m.x+Math.cos(a)*rr,rand(.8,C.s*2.4),m.z+Math.sin(a)*rr,rand(-1,1),rand(.3,1.8),rand(-1,1),tmpC.getHex(),.9,0);}
+  }};
+};
+})();
+
+/* ===================== Ei: Prisma im Glas ===================== */
+EGG6[38]=(g,r)=>{
+  const ft=facetTex('e36',256,256,36,.6);
+  const shell=bodyEgg(g,r,new THREE.MeshStandardMaterial({map:ft,emissiveMap:ft,emissive:0xffffff,emissiveIntensity:.45,roughness:.08,metalness:.5,transparent:true,opacity:.62,depthWrite:false}),.95,1.28);
+  const rim=bodyEgg(g,r,bas(0xffffff,{transparent:true,opacity:.1,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.BackSide}),1.04,1.34);
+  const inner=new THREE.Group();inner.position.y=.05;g.add(inner);
+  const prism=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.8,3),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xb8d8ff,emissiveIntensity:.8,roughness:.05,metalness:.2,transparent:true,opacity:.85,flatShading:true}));
+  prism.rotation.z=PI/2;inner.add(prism);
+  const beamTex=ecache('b36',()=>{const c=document.createElement('canvas');c.width=8;c.height=64;const x=c.getContext('2d'),gr=x.createLinearGradient(0,0,0,64);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.3,'rgba(255,255,255,1)');gr.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=gr;x.fillRect(0,0,8,64);return new THREE.CanvasTexture(c);});
+  const inb=new THREE.Mesh(new THREE.PlaneGeometry(1,.1),bas(0xffffff,{map:beamTex,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));inb.position.set(-.6,0,0);inb.scale.set(.9,1,1);inner.add(inb);
+  const fan=[];for(let i=0;i<7;i++){const pv=new THREE.Group();inner.add(pv);const b=new THREE.Mesh(new THREE.PlaneGeometry(1,.07),bas(hsl(i/7*.8,.9,.6).getHex(),{map:beamTex,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));b.position.set(.78,0,0);b.scale.set(1.15,1,1);pv.add(b);fan.push(pv);}
+  const core=glowSprite(0xffffff,1.5,1);core.material.opacity=.4;inner.add(core);
+  const NM=48,mo=pointsDyn(g,NM,.12,0xffffff,true),md=[];
+  for(let i=0;i<NM;i++)md.push({a:Math.random()*TAU,R:.7+Math.random()*.55,y:(Math.random()-.5)*1.7,sp:.3+Math.random()*.7,h:Math.random()*.8});
+  const band=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,.22,48,1,true),new THREE.MeshBasicMaterial({map:bandTex(0xc8e8ff,9),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,opacity:.85}));band.position.y=.05;band.rotation.x=.45;g.add(band);
+  const waves=[];for(let i=0;i<3;i++){const m=new THREE.Mesh(new THREE.RingGeometry(.92,1,64),bas(0xffffff,{transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));m.rotation.x=-PI/2;m.position.y=-1.15;g.add(m);waves.push(m);}
+  const tc=new THREE.Color();
+  return(t,dt)=>{
+    const hue=(t*.08)%0.8;
+    ft.offset.set((t*.02)%1,(t*.03)%1);shell.rotation.y=t*.2;prism.rotation.x=t*.6;
+    inb.material.opacity=.6+.25*Math.sin(t*2);
+    fan.forEach((pv,i)=>{pv.rotation.z=(i-3)*(.12+.05*Math.sin(t*.9))+Math.sin(t*1.3+i)*.02;});
+    for(let i=0;i<NM;i++){const o=md[i],a=o.a+t*o.sp;mo.pos[i*3]=Math.cos(a)*o.R;mo.pos[i*3+1]=o.y+Math.sin(t*1.4+i)*.1;mo.pos[i*3+2]=Math.sin(a)*o.R;tc.setHSL((o.h+t*.1)%1,.85,.65);mo.cl[i*3]=tc.r;mo.cl[i*3+1]=tc.g;mo.cl[i*3+2]=tc.b;}
+    mo.g.attributes.position.needsUpdate=true;mo.g.attributes.color.needsUpdate=true;
+    band.material.map.offset.x=(t*.05)%1;band.rotation.y=t*.15;
+    waves.forEach((m,i)=>{const u=((t*.35+i/3)%1);m.scale.setScalar(.6+u*3.2);m.material.opacity=(1-u)*.34;m.material.color.setHSL((u*.8+hue)%1,.8,.7);});
+    core.material.color.setHSL(hue,.5,.8);
+    if(!thumbMode&&Math.random()<dt*12*qf()){const p=wpos(g);tc.setHSL(Math.random()*.8,.9,.7);emitS(p.x+rand(-.8,.8),p.y+rand(-.8,1.2),p.z+rand(-.8,.8),rand(-.3,.3),rand(.4,1.2),rand(-.3,.3),tc.getHex(),1.3,0);}
+  };
+};
+
+/* ===================== Haustiere: Prisma-Merkmale ===================== */
+const PRISM=new THREE.OctahedronGeometry(1,0);
+PETDEC[38]=H=>{
+  const g=H.g,add=H.add,anim=H.anim,orb=H.orb,GCONE=H.GCONE,j=H.j;
+  const pm=(h,o)=>H.M(hsl(h,.7,.68).getHex(),hsl(h,.9,.5).getHex(),Object.assign({emissiveIntensity:.9,transparent:true,opacity:.88,roughness:.12,metalness:.3},o||{}));
+  const hy=H.hy,hz=H.hz,top=H.top;
+  if(j===0){      /* Kristallflügel */
+    for(const s of[-1,1])for(let i=0;i<4;i++){const w=add(PRISM,pm(i*.2),s*(.28+i*.1),.28+i*.04,-.12-i*.04,.1,.52-i*.05,.05,0,0,-s*(.5+i*.25));anim.push(t=>{w.rotation.z=-s*(.5+i*.25+Math.sin(t*9+i)*.18);});}
+    add(PRISM,pm(.5),0,top+.08,hz,.09,.2,.09);
+  }else if(j===1){ /* Spektralschweif */
+    for(let i=0;i<7;i++){const c=add(GCONE,H.M(hsl(i/7*.8,.9,.6).getHex(),hsl(i/7*.8,.9,.5).getHex(),{emissiveIntensity:1.1,transparent:true,opacity:.85}),0,.15+i*.03,-.45,.07,.6,.07,-1.2+(i-3)*.05,0,(i-3)*.2);
+      anim.push(t=>{c.rotation.z=(i-3)*.2+Math.sin(t*3+i*.6)*.12;});}
+    add(PRISM,pm(.1),0,.1,-.4,.14,.2,.14);
+  }else if(j===2){ /* kreisende Prismen + Halo */
+    for(let i=0;i<3;i++){const o=add(PRISM,pm(i*.28),0,0,0,.11,.2,.11);orb.push({m:o,rad:.78+i*.08,sp:1.1+i*.2,ph:i/3*TAU,y:.3+i*.12});}
+    const ha=H.tor(.3,.025,H.M(0xffffff,0xffffff,{emissiveIntensity:1.4}),30);ha.rotation.x=PI/2;ha.position.set(0,top+.2,hz);g.add(ha);anim.push(t=>{ha.rotation.z=t*.8;});
+  }else if(j===3){ /* Facetten-Geweih und Rückenpanzer */
+    for(const s of[-1,1])for(let i=0;i<3;i++)add(PRISM,pm(.55+i*.08),s*(.14+i*.07),top-.02+i*.17,hz-.05-i*.04,.05,.26-i*.03,.05,0,0,-s*(.25+i*.3));
+    for(let i=0;i<5;i++)add(PRISM,pm(i*.16),0,.42-Math.abs(i-2)*.03,.35-i*.2,.1,.18,.1);
+  }else{           /* Glasdom mit Regenbogenfunken */
+    const dome=add(H.GSPH,H.M(0xcfe8ff,0x80c0ff,{transparent:true,opacity:.2,depthWrite:false,emissiveIntensity:.5}),0,.05,0,.82,.72,.95);
+    for(let i=0;i<6;i++){const o=add(H.GSPH,H.M(hsl(i/6*.8,.9,.7).getHex(),hsl(i/6*.8,.9,.6).getHex(),{emissiveIntensity:1.5}),0,0,0,.05,.05,.05);orb.push({m:o,rad:.5+(i%3)*.12,sp:.9+i*.14,ph:i/6*TAU,y:.45-(i%3)*.25});}
+  }
+};
+
+/* ===================== Besonderheiten ===================== */
+const DECOY_P=.2;
+AREAFX[35]={
+  input(ctl,dt,api){            /* Lichtbahnen */
+    const P=api.P,t=api.time;
+    for(let k=0;k<3;k++){if(Math.abs(P.z-laneZ(k,t))<LANE_W*.5+.4){const along=P.vx*laneDir(k);
+      if(along>2)ctl.sp*=1.4;else if(along<-2)ctl.sp*=.87;break;}}
+  },
+  mobPre(m,dt,t,api){           /* Farbphasen */
+    if(m.v0===undefined)m.v0=m.v;m.v=m.v0*phaseSpd(api.time);
+  },
+  egg(e,dt,t,api){              /* Trugbilder */
+    if(e.fake===undefined)e.fake=Math.random()<DECOY_P;
+    if(!e.fake||!e.built||e.fakeDone)return;
+    e.fakeDone=true;
+    e.g.children.forEach((c,i)=>{if(c===e.m)return;if(i===0){c.material=c.material.clone();c.material.color.setHex(0xbfe8ff);}else c.visible=false;});
+    e.m.traverse(o=>{if(o.isMesh&&o.material){o.material=o.material.clone();o.material.transparent=true;o.material.opacity=.5;o.material.depthWrite=false;}});
+    e.shim=e.m;
+  },
+  tick(dt,t,api){
+    for(const e of api.eggs){if(e.fake&&e.fakeDone&&e.shim&&e.a===35){const k=.34+.2*Math.sin(t*9+e.ph);e.shim.traverse(o=>{if(o.isMesh&&o.material)o.material.opacity=k;});e.shim.position.x=Math.sin(t*14+e.ph)*.05;}}
+  },
+  pick(e,api){
+    if(!e.fake)return;
+    api.burstFx(e.x,1.3,e.z,0xbfe8ff,60,9,4,1.1);api.ring(e.x,.1,e.z,0xbfe8ff,6,.7);api.beep(1500,.25,'sine',.07,.4);api.beep(900,.3,'triangle',.06,.5);
+    api.toast('Trugbild! Das Ei war nur ein Spiegelbild – und der Prismenfürst ist trotzdem wach.','bad');
+    return false;
+  }
+};
+})();
 
 
 /* ---------- Update ---------- */
