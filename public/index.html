@@ -261,6 +261,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
   <div class="modal" id="mInv" hidden><div class="sheet">
     <header><h2>Haustiere</h2><div class="sub" id="invSub"></div><button class="x" data-close>Schließen</button></header>
     <div class="tools"><button class="btn" id="btnBest">Beste ausrüsten</button><button class="btn" id="btnNone">Alle ablegen</button></div>
+    <div class="tools"><input id="invQ" type="search" placeholder="Suchen (Name, Seltenheit, Mutation)" style="flex:1;min-width:160px;font:400 15px var(--display);color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px"><select id="invSort" class="btn"><option value="mps">Ertrag</option><option value="r">Seltenheit</option><option value="new">Neueste</option><option value="name">Name</option><option value="v">Mutation</option></select><button class="btn" id="invMut">Nur Mutationen</button><button class="btn" id="invEq">Nur Aktive</button></div>
     <div class="grid" id="petGrid"></div>
   </div></div>
   <div class="modal" id="mFig" hidden><div class="sheet">
@@ -3684,10 +3685,14 @@ function renderFig(){
 }
 function closePanels(){$('mFig').hidden=true;$('mInv').hidden=true;$('mUp').hidden=true;$('mIdx').hidden=true;}
 function togglePanel(id){if(!$(id).hidden)closePanels();else openPanel(id);}
+const invF={q:'',sort:'mps',mut:false,eq:false};
 function renderInv(){
-  const list=S.pets.slice().sort((a,b)=>b.mps-a.mps);
+  let list=S.pets.filter(p=>{if(invF.mut&&!p.v)return false;if(invF.eq&&!S.equipped.includes(p.id))return false;
+    if(invF.q){const t=(SPECIES[p.sp].name+' '+RAR[p.r].name+' '+(VARN[p.v]||'')).toLowerCase();if(!invF.q.toLowerCase().split(/\s+/).every(w=>t.includes(w)))return false;}return true;});
+  const so=invF.sort;list.sort((a,b)=>so==='r'?b.r-a.r||b.mps-a.mps:so==='new'?b.id-a.id:so==='name'?SPECIES[a.sp].name.localeCompare(SPECIES[b.sp].name,'de')||b.mps-a.mps:so==='v'?b.v-a.v||b.mps-a.mps:b.mps-a.mps);
+  $('invMut').style.outline=invF.mut?'2px solid var(--gold)':'';$('invEq').style.outline=invF.eq?'2px solid var(--gold)':'';
   $('invSub').textContent=S.equipped.length+'/'+slots()+' ausgerüstet · '+S.pets.length+' Tiere · +'+fmt(incomeVal)+'/s';
-  $('petGrid').innerHTML=list.length?list.map(p=>{const sp=SPECIES[p.sp],eq=S.equipped.includes(p.id),im=thumbOf('p',p.sp,p.v);return '<button class="pet'+(eq?' on':'')+'" data-id="'+p.id+'" style="--c:'+RAR[p.r].css+'">'+(im?'<img src="'+im+'" alt="">':'<span class="sw" style="background:'+sp.col+'"></span>')+'<b>'+sp.name+(p.v?' ✦':'')+'</b><small>'+RAR[p.r].name+'</small><em>+'+fmt(p.mps)+'/s</em>'+(p.v?'<small>'+VARN[p.v]+'</small>':'')+(eq?'<u>Aktiv</u>':'')+'</button>';}).join(''):'<p class="empty">Noch keine Haustiere. Dein erstes Ei schlüpft gleich im Brutkasten.</p>';
+  $('petGrid').innerHTML=list.length?list.map(p=>{const sp=SPECIES[p.sp],eq=S.equipped.includes(p.id),im=thumbOf('p',p.sp,p.v);return '<button class="pet'+(eq?' on':'')+'" data-id="'+p.id+'" style="--c:'+RAR[p.r].css+'">'+(im?'<img src="'+im+'" alt="">':'<span class="sw" style="background:'+sp.col+'"></span>')+'<b>'+sp.name+(p.v?' ✦':'')+'</b><small>'+RAR[p.r].name+'</small><em>+'+fmt(p.mps)+'/s</em>'+(p.v?'<small>'+VARN[p.v]+'</small>':'')+(eq?'<u>Aktiv</u>':'')+'</button>';}).join(''):'<p class="empty">'+(S.pets.length?'Keine Treffer.':'Noch keine Haustiere. Dein erstes Ei schlüpft gleich im Brutkasten.')+'</p>';
 }
 function equipChanged(){recalc();rebuildPets();netDirty.pt=1;renderInv();save();}
 $('petGrid').addEventListener('click',e=>{
@@ -3740,6 +3745,8 @@ $('btnReset').onclick=function(){
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closePanels));
 for(const id of['mInv','mUp','mIdx','mFig'])$(id).addEventListener('pointerdown',e=>{if(e.target===$(id))closePanels();});
 $('btnInv').onclick=()=>{if(started)togglePanel('mInv');};
+$('invQ').oninput=e=>{invF.q=e.target.value.trim();renderInv();};$('invSort').onchange=e=>{invF.sort=e.target.value;renderInv();};
+$('invMut').onclick=()=>{invF.mut=!invF.mut;renderInv();};$('invEq').onclick=()=>{invF.eq=!invF.eq;renderInv();};
 $('btnFig').onclick=()=>{if(started)togglePanel('mFig');};
 applyCos(P,myCos());
 $('btnTempo').onclick=()=>{if(started)toggleNorm();};
