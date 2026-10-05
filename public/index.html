@@ -244,6 +244,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
         <button class="btn" id="btnIdx">Index<kbd>X</kbd></button>
         <button class="btn" id="btnInv">Haustiere<kbd>I</kbd></button>
         <button class="btn" id="btnFig">Figur<kbd>F</kbd></button>
+        <button class="btn" id="btnSet">Einstellungen</button>
         <button class="btn" id="btnTempo">Tempo: Voll<kbd>T</kbd></button>
         <button class="btn" id="btnUp">Gebiete<kbd>G</kbd></button>
       </div>
@@ -263,6 +264,10 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
     <div class="tools"><button class="btn" id="btnBest">Beste ausrüsten</button><button class="btn" id="btnNone">Alle ablegen</button></div>
     <div class="tools"><input id="invQ" type="search" placeholder="Suchen (Name, Seltenheit, Mutation)" style="flex:1;min-width:160px;font:400 15px var(--display);color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px"><select id="invSort" class="btn"><option value="mps">Ertrag</option><option value="r">Seltenheit</option><option value="new">Neueste</option><option value="name">Name</option><option value="v">Mutation</option></select><button class="btn" id="invMut">Nur Mutationen</button><button class="btn" id="invEq">Nur Aktive</button></div>
     <div class="grid" id="petGrid"></div>
+  </div></div>
+  <div class="modal" id="mSet" hidden><div class="sheet">
+    <header><h2>Einstellungen</h2><div class="sub"></div><button class="x" data-close>Schließen</button></header>
+    <div id="setBody" style="padding:6px 4px 14px;display:flex;flex-direction:column;gap:14px"></div>
   </div></div>
   <div class="modal" id="mFig" hidden><div class="sheet">
     <header><h2>Deine Figur</h2><div class="sub" id="figSub"></div><button class="x" data-close>Schließen</button></header>
@@ -826,7 +831,9 @@ function updateRingsBeams(dt){
 }
 let trauma=0,flashV=0,timeScale=1,slowT=0;
 const flashColor=new THREE.Color(1,.15,.1);
-function addShake(v){trauma=Math.min(1,trauma+v);}
+const SET=(()=>{const d={sfx:.8,mus:.5,shake:1};try{Object.assign(d,JSON.parse(localStorage.getItem('mh-set')||'{}'));}catch(e){}return d;})();
+function saveSet(){try{localStorage.setItem('mh-set',JSON.stringify(SET));}catch(e){}}
+function addShake(v){trauma=Math.min(1,trauma+v*SET.shake);}
 function flashScreen(col,v){flashColor.setHex(col);flashV=Math.max(flashV,v);}
 function slowmo(t,sc){slowT=Math.max(slowT,t);timeScale=sc;}
 function makeEggTex(col){
@@ -1681,13 +1688,27 @@ function updateMobs(dt,t){
 }
 
 /* ---------- Ton, Toasts ---------- */
-let ac=null;
+let ac=null,sfxG=null,musG=null;
+function audioInit(){try{ac=new(window.AudioContext||window.webkitAudioContext)();sfxG=ac.createGain();sfxG.connect(ac.destination);musG=ac.createGain();musG.connect(ac.destination);audioVol();setInterval(musicTick,380);}catch(e){}}
+function audioVol(){if(!ac)return;sfxG.gain.value=SET.sfx;musG.gain.value=SET.mus*.5;}
+/* Musik: ruhige, generative Pentatonik; Grundton je Gebiet, schneller und dichter wenn ein Boss nah ist */
+let musStep=0;const PENT=[0,3,5,7,10,12,15,17];
+function musicTick(){
+  if(!ac||SET.mus<=0.01||!started||document.hidden)return;
+  if(ac.state==='suspended')try{ac.resume();}catch(e){}
+  const ai=Math.max(0,areaIdx(P.x)),root=110*Math.pow(2,((ai*5)%12)/12),danger=dangerD<45,t=ac.currentTime;
+  musStep++;
+  const note=(f,d,type,v)=>{const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(v,t+.04);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(musG);o.start(t);o.stop(t+d+.05);};
+  if(musStep%8===1)note(root/2,3.4,'sine',.35);
+  if(musStep%2===0||danger){const deg=PENT[(musStep*3+ai*2+(musStep>>2))%PENT.length];note(root*2*Math.pow(2,deg/12),1.4,danger?'triangle':'sine',danger?.22:.16);}
+  if(danger&&musStep%2===1)note(root*Math.pow(2,PENT[(musStep*5)%4]/12),.4,'sawtooth',.06);
+}
 function beep(f,d,type,vol,slide){
   if(!ac)return;try{
     const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;
     if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f*slide),ac.currentTime+d);
     g.gain.value=vol||.08;g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);
-    o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d);
+    o.connect(g);g.connect(sfxG||ac.destination);o.start();o.stop(ac.currentTime+d);
   }catch(e){}
 }
 function toast(t,kind){
@@ -3694,7 +3715,7 @@ function buildMinimap(){
 }
 
 /* ---------- Menüs ---------- */
-function openPanel(id){closePanels();$(id).hidden=false;if(id==='mInv')renderInv();else if(id==='mUp')renderUp();else if(id==='mFig')renderFig();else renderIdx();}
+function openPanel(id){closePanels();$(id).hidden=false;if(id==='mInv')renderInv();else if(id==='mUp')renderUp();else if(id==='mFig')renderFig();else if(id==='mSet')renderSet();else renderIdx();}
 function myPlot(){if(!Array.isArray(S.plot))S.plot=[0,10,0];return S.plot;}
 function setPlotV(i,v){myPlot()[i]=v;applyPlot(mySlot,S.plot);netDirty.pl=1;save();renderFig();}
 function myCos(){if(!Array.isArray(S.cos))S.cos=[0,1,0,0];return S.cos;}
@@ -3715,7 +3736,7 @@ function renderFig(){
   $('figBody').querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>{const q=b.dataset.pl.split(':');setPlotV(+q[0],+q[1]);});
   $('figBody').querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{const q=b.dataset.cs.split(':');setCosV(+q[0],+q[1]);});
 }
-function closePanels(){$('mFig').hidden=true;$('mInv').hidden=true;$('mUp').hidden=true;$('mIdx').hidden=true;}
+function closePanels(){$('mSet').hidden=true;$('mFig').hidden=true;$('mInv').hidden=true;$('mUp').hidden=true;$('mIdx').hidden=true;}
 function togglePanel(id){if(!$(id).hidden)closePanels();else openPanel(id);}
 const invF={q:'',sort:'mps',mut:false,eq:false};
 function renderInv(){
@@ -3775,10 +3796,19 @@ $('btnReset').onclick=function(){
   noSave=true;toast('Neues Spiel startet …');setTimeout(()=>location.reload(),350);
 };
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closePanels));
-for(const id of['mInv','mUp','mIdx','mFig'])$(id).addEventListener('pointerdown',e=>{if(e.target===$(id))closePanels();});
+for(const id of['mInv','mUp','mIdx','mFig','mSet'])$(id).addEventListener('pointerdown',e=>{if(e.target===$(id))closePanels();});
 $('btnInv').onclick=()=>{if(started)togglePanel('mInv');};
 $('invQ').oninput=e=>{invF.q=e.target.value.trim();renderInv();};$('invSort').onchange=e=>{invF.sort=e.target.value;renderInv();};
 $('invMut').onclick=()=>{invF.mut=!invF.mut;renderInv();};$('invEq').onclick=()=>{invF.eq=!invF.eq;renderInv();};
+function renderSet(){
+  const sl=(key,t)=>'<label style="display:flex;align-items:center;gap:10px;font:400 15px var(--display)"><span style="width:130px">'+t+'</span><input type="range" min="0" max="1" step=".05" value="'+SET[key]+'" data-set="'+key+'" style="flex:1"><b style="width:44px;text-align:right">'+Math.round(SET[key]*100)+'%</b></label>';
+  $('setBody').innerHTML=sl('sfx','Effekte')+sl('mus','Musik')+sl('shake','Bildschirmwackeln')+
+    '<div style="display:flex;gap:8px;align-items:center"><span style="font:400 15px var(--display);width:130px">Name</span><input id="setName" maxlength="14" value="'+myName.replace(/"/g,'')+'" style="flex:1;font:400 15px var(--display);color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px"><button class="btn" id="setNameOk">Ändern</button></div>'+
+    '<div style="opacity:.7;font-size:13px">Qualität stellst du oben über den Button „Qualität“ ein. Spielstand exportieren oder löschen findest du in der Hilfe.</div>';
+  $('setBody').querySelectorAll('[data-set]').forEach(i=>i.oninput=()=>{SET[i.dataset.set]=+i.value;i.nextElementSibling.textContent=Math.round(i.value*100)+'%';saveSet();audioVol();});
+  $('setNameOk').onclick=()=>{const nm=cleanName($('setName').value);if(nm){myName=nm;try{localStorage.setItem('mh-name',nm);}catch(e){}netFull=true;refreshPlotLabels();toast('Name geändert: '+nm);}};
+}
+$('btnSet').onclick=()=>{if(started)togglePanel('mSet');};
 $('btnFig').onclick=()=>{if(started)togglePanel('mFig');};
 applyCos(P,myCos());
 $('btnTempo').onclick=()=>{if(started)toggleNorm();};
@@ -4089,7 +4119,7 @@ $('nameIn').value=myName;
 $('btnPlay').onclick=function(){
   const nm=cleanName($('nameIn').value);if(nm){myName=nm;try{localStorage.setItem('mh-name',nm);}catch(e){}}
   netFull=true;refreshPlotLabels();
-  try{ac=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
+  audioInit();
   $('start').hidden=true;started=true;lastT=performance.now();
   if(loadedOld){
     const el=Math.min(3600,(Date.now()-S.last)/1000);
