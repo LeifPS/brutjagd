@@ -464,7 +464,7 @@ S.ver=5;
 let noSave=false;function save(){if(noSave)return;S.last=Date.now();try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
 const speed=()=>8+1.5*S.speedLv, cap=()=>1+S.carryLv, slots=()=>3+S.slotLv;
 const COST={speed:()=>Math.floor(250*Math.pow(1.22,S.speedLv)),carry:()=>Math.floor(1000*Math.pow(3.2,S.carryLv)),slot:()=>Math.floor(10000*Math.pow(4.5,S.slotLv))};
-const MAXLV={speed:Math.max(140,Math.ceil((AREAS[AREAS.length-1].v-8)/1.5)+12),carry:13,slot:11};
+const MAXLV={speed:Math.max(200,Math.ceil((AREAS[AREAS.length-1].v-8)/1.5)+12),carry:13,slot:11};
 let normSpeed=false;try{normSpeed=localStorage.getItem('mh-norm')==='1';}catch(_){}
 const speedEff=()=>normSpeed?Math.min(8,speed()):speed();
 function toggleNorm(){normSpeed=!normSpeed;try{localStorage.setItem('mh-norm',normSpeed?'1':'0');}catch(_){}toast(normSpeed?'Tempo: Normal ('+fmtV(8)+')':'Tempo: Voll ('+fmtV(speed())+')');}
