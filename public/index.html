@@ -349,6 +349,23 @@ AD7[36]={
   ]
 };
 
+window.AD7=window.AD7||{};
+AD7[37]={
+  area:{name:'Nullgravitation',a:'#1c1a4a',b:'#171540',wall:0x2a2a70,glow:0x9aa8ff,fog:'#0a0a28',
+    deco:{t:'octa',c:0x8a98ff,e:.8},
+    rule:'Nullgravitation: Schwerkraftwellen rollen durch den Gang – in der Welle bist du schwerelos schnell, im Tal schleppend. Reite die Welle!',
+    ruleShort:'Schwerkraftwellen · Schwebende Eier',
+    mob:{name:'Schwerkraftgolem',kind:'custom',id:'gravgolem',col:'#8a98ff',eye:0xffffff,s:7}},
+  tier:{name:'Schwerelos',col:0x9aa8ff,desc:'Durchsichtiges Ei, in dem kleine Lichtkugeln ohne Schwerkraft nach oben treiben'},
+  pets:[
+    {name:'Mondhase',col:'#d0d8ff',desc:'Ein kleiner Mond kreist um seine Ohren'},
+    {name:'Kometenfuchs',col:'#9ac8ff',desc:'Sein Schweif brennt wie ein Komet'},
+    {name:'Nebelqualle',col:'#c0a0ff',desc:'Schwebt auf einer Wolke aus violettem Sternennebel'},
+    {name:'Asteroidenkäfer',col:'#8890b0',desc:'Felsbrocken umkreisen seinen Panzer'},
+    {name:'Sternenwal',col:'#6a80ff',desc:'Winzige Sterne leuchten auf seiner Haut'}
+  ]
+};
+
 (function(){
 'use strict';
 const $=id=>document.getElementById(id);
@@ -3775,6 +3792,52 @@ AREAFX[36]={
   mobPre(m,dt,t,api){if(m.v0===undefined)m.v0=m.v;const c=api.time%30;
     if(c>=27){if(m.chimed!==Math.floor(api.time/30)){m.chimed=Math.floor(api.time/30);api.beep(110,1.2,'sine',.14,.7);api.toast('Stundenschlag! Der Zeitwächter steht still.','good');api.flashScreen(0xffc060,.25);}m.freeze=.2;}
     else{const ph=Math.floor(api.time)%2;m.v=m.v0*(ph?.82:1.22);if(m.lastPh!==ph){m.lastPh=ph;api.beep(ph?400:600,.06,'square',.05);}}}
+};
+})();
+
+/* ===================== Gebiet 38: Nullgravitation ===================== */
+(function(){
+const {mk,grp,gl,glow,std,add,hsl,TAU,PI}=W2;
+const rock=(c)=>std(c||0x6a70a8,{flatShading:true,roughness:.7,metalness:.1,emissive:0x1a1a50,emissiveIntensity:.6});
+ENV6[37]=W2.env({seed:3801,hue:.64,sat:.4,lig:.1,terr:{k:'waves',amp:10},floor:{k:'wave',c1:0x0a0a2a,c2:0x4a4ad0},stars:{n:1300,tints:[[.8,.85,1],[1,.8,1],[.7,1,1]],size:3.4},
+  suns:[[0x8a98ff,650,720,90,-200],[0xff9ae0,420,640,60,190,.7]],
+  objs:[{n:50,geo:()=>new THREE.DodecahedronGeometry(1,0),mat:()=>rock(),w:[1.5,7],h:[1.2,6],z:[14,95],y:[2,45],spin:.5,tilt:1,bob:3},
+        {n:12,geo:()=>new THREE.SphereGeometry(1,16,12),mat:()=>glow(0x9aa8ff,.9,{transparent:true,opacity:.5}),w:[2,6],h:[2,6],z:[22,100],y:[10,50]},
+        {n:30,geo:()=>new THREE.OctahedronGeometry(1),mat:()=>glow(0xc0d0ff,1.2),w:[.3,.8],h:[.5,1.4],z:[12,40],y:[2,20],spin:2,bob:2}],
+  dust:{n:700,h:.62,hv:.2,vy:-.3,size:.5}
+});
+MOB6.gravgolem=function(C,inner,H){
+  const root=grp(inner),K=.95;root.scale.setScalar(K);const fig=grp(root,0,3.2,0),R=rock(),RG=rock(0x9aa8ff);
+  const core=mk(new THREE.IcosahedronGeometry(1.2,1),glow(0xffffff,1.6),fig,0,0,0);gl(fig,0x9aa8ff,6,.6);
+  const pcs=[];const D=new THREE.DodecahedronGeometry(1,0);
+  const spec=[[0,2.8,0,1.1],[0,-2.2,0,.8],[-2.6,.8,0,1.0],[2.6,.8,0,1.0],[-3.5,-1.4,0,.8],[3.5,-1.4,0,.8],[-1.3,1.6,.9,.7],[1.3,1.6,.9,.7],[-1.4,-.4,-1.2,.9],[1.4,-.4,-1.2,.9],[0,.3,1.8,.9],[0,.2,-2,1.1]];
+  spec.forEach((p,i)=>{const m=mk(D,i%3?R:RG,fig,p[0],p[1],p[2],p[3]*1.1,p[3]*.9,p[3]);pcs.push({m:m,p:p,ph:i*1.3});});
+  const eyes=[-1,1].map(s=>mk(new THREE.SphereGeometry(.18,8,6),glow(0xffffff,2),fig,s*.4,3,.9));
+  const rings=[0,1].map(i=>mk(new THREE.TorusGeometry(4.6+i*1.2,.08,6,48),add(0x9aa8ff),fig,0,.2,0,1,1,1,PI/2+i*.6,0,i*.5));
+  const tail=[];for(let i=0;i<6;i++)tail.push(mk(new THREE.ConeGeometry(.6-i*.07,2.2,6),add(0x9ad0ff,{opacity:.45}),fig,0,0,-2.4-i*1.1,1,1,1,-PI/2));
+  return{limbs:[],tents:[],upd(t,mv,dt,m){dt=Math.min(dt,.05);const run=Math.min(mv/30,1);
+    fig.position.y=3.2+.35*Math.sin(t*1.1);core.rotation.y=t*.8;core.scale.setScalar(1+.08*Math.sin(t*3));root.rotation.x=run*.2;
+    pcs.forEach(o=>{const p=o.p;o.m.position.set(p[0]+Math.sin(t*.7+o.ph)*.3,p[1]+Math.sin(t*.9+o.ph)*.45,p[2]+Math.cos(t*.6+o.ph)*.3);o.m.rotation.x=t*.3+o.ph;o.m.rotation.y=t*.2;});
+    rings.forEach((r,i)=>{r.rotation.z=t*(.3+i*.2)*(i?-1:1);});tail.forEach((c,i)=>{c.material.opacity=.4*(1-i/7)+.08*Math.sin(t*3+i);});
+    if(Math.random()<dt*20*qf()){const a=Math.random()*TAU,rr=Math.random()*C.s;emit(m.x+Math.cos(a)*rr,rand(1,C.s*2.6),m.z+Math.sin(a)*rr,rand(-1,1),rand(.6,2.2),rand(-1,1),0x9aa8ff,.9,-1);}
+  }};
+};
+EGG6[40]=W2.egg({col:0xb8c4ff,emi:0x4a58d0,mat:{metalness:.3},rim:0x9aa8ff,band:0x9aa8ff,ring:0x9aa8ff,pts:0xcfd8ff,
+  inner:(g)=>{const bs=[];for(let i=0;i<7;i++){const b=mk(new THREE.SphereGeometry(1,10,8),glow(hsl(.6+i*.04,.6,.7).getHex(),1.4),g,0,0,0,.08+.04*(i%3));bs.push({m:b,x:(i-3)*.12,ph:i*1.7,sp:.25+.08*i});}
+    const pl=mk(new THREE.SphereGeometry(.22,12,10),std(0x6a70d0),g,0,0,0),rg=mk(new THREE.TorusGeometry(.38,.025,6,30),add(0xffffff),g,0,0,0,1,1,1,PI/2.4);
+    return t=>{bs.forEach(o=>{const u=((t*o.sp+o.ph)%3)/3;o.m.position.set(o.x+Math.sin(t+o.ph)*.15,-.9+u*1.8,Math.cos(t*.8+o.ph)*.2);});pl.rotation.y=t;rg.rotation.z=t*.4;};}});
+W2.pets(40,[
+  H=>{const m=H.add(H.GSPH,H.M(0xe0e4ff,0x6a70b0),0,0,0,.16,.16,.16);H.orb.push({m:m,rad:.7,sp:1.2,ph:0,y:.7});H.add(H.GSPH,H.M(0x8a90c8),.05,.02,.12,.04,.04,.04);},
+  H=>{for(let i=0;i<5;i++){const c=H.add(H.GCONE,H.M(0x9ad0ff,0x4a90ff,{emissiveIntensity:1,transparent:true,opacity:.75-i*.1}),0,.3+i*.03,-.4-i*.2,.12-i*.015,.5,.12-i*.015,-PI/2+.1,0,0);H.anim.push(t=>{c.position.y=.3+i*.03+Math.sin(t*4+i)*.04;});}},
+  H=>{const c=H.add(H.GSPH,H.M(0xb090ff,0x7040d0,{transparent:true,opacity:.35,emissiveIntensity:.8}),0,.12,0,.62,.3,.62);H.anim.push(t=>{c.scale.y=.3+.05*Math.sin(t*2);});for(let i=0;i<4;i++){const m=H.add(H.GSPH,H.M(0xffffff,0xc0a0ff,{emissiveIntensity:1.5}),0,0,0,.04,.04,.04);H.orb.push({m:m,rad:.55,sp:.8+i*.2,ph:i*1.6,y:.1+i*.08});}},
+  H=>{for(let i=0;i<4;i++){const m=H.add(H.GSPH,H.M(0x707898,0x202850),0,0,0,.1+.03*(i%2),.08,.1);H.orb.push({m:m,rad:.6+i*.06,sp:1+i*.25,ph:i*1.57,y:.35+i*.06});}},
+  H=>{for(let i=0;i<6;i++){const a=i*1.1;H.add(H.GSPH,H.M(0xffffff,0xa0b0ff,{emissiveIntensity:1.6}),Math.sin(a)*.3,.3+Math.cos(a*1.7)*.15,Math.cos(a)*.35,.035,.035,.035);}}
+]);
+AREAFX[37]={
+  enter(api){api.toast('Schwerkraftwellen: reite die Welle für Extra-Tempo!');},
+  input(ctl,dt,api){const w=Math.sin((api.P.x-api.time*26)/24);ctl.sp*=1+.4*w;},
+  egg(e,dt,t,api){if(e.m&&e.baseY===undefined)e.baseY=e.m.position.y;if(e.m)e.m.position.y=(e.baseY||0)+.9+Math.sin(t*1.2+(e.ph||0))*.7;},
+  mobPre(m,dt,t,api){if(m.v0===undefined)m.v0=m.v;m.v=m.v0*(1+.12*Math.sin((m.x-api.time*26)/24));}
 };
 })();
 
