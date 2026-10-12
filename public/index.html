@@ -335,7 +335,7 @@ AD7[35]={
 window.AD7=window.AD7||{};
 AD7[36]={
   area:{name:'Uhrwerkstadt',a:'#4a3418',b:'#3d2b14',wall:0x6a4a1c,glow:0xffc060,fog:'#1a1008',
-    deco:{t:'gear',c:0xc89040,e:.3},
+    deco:{t:'gear',c:0x3a2a12,e:0},
     rule:'Uhrwerkstadt: Der Wächter tickt – im Tick ist er schnell, im Tack langsam. Beim Stundenschlag steht er kurz still: Dann schnell Eier holen!',
     ruleShort:'Tick-Tack · Stundenschlag',
     mob:{name:'Zeitwächter',kind:'custom',id:'chronoguard',col:'#c89040',eye:0xffe080,s:6.8}},
@@ -352,7 +352,7 @@ AD7[36]={
 window.AD7=window.AD7||{};
 AD7[37]={
   area:{name:'Nullgravitation',a:'#1c1a4a',b:'#171540',wall:0x2a2a70,glow:0x9aa8ff,fog:'#0a0a28',
-    deco:{t:'octa',c:0x8a98ff,e:.8},
+    deco:{t:'octa',c:0x2a3078,e:.15},
     rule:'Nullgravitation: Schwerkraftwellen rollen durch den Gang – in der Welle bist du schwerelos schnell, im Tal schleppend. Reite die Welle!',
     ruleShort:'Schwerkraftwellen · Schwebende Eier',
     mob:{name:'Schwerkraftgolem',kind:'custom',id:'gravgolem',col:'#8a98ff',eye:0xffffff,s:7}},
@@ -369,7 +369,7 @@ AD7[37]={
 window.AD7=window.AD7||{};
 AD7[38]={
   area:{name:'Spiegelkabinett',a:'#3a4a5a',b:'#2e3c4a',wall:0x4a6078,glow:0xc8f4ff,fog:'#0c1822',
-    deco:{t:'octa',c:0xd8f8ff,e:.9},
+    deco:{t:'octa',c:0x4a6a80,e:.1},
     rule:'Spiegelkabinett: Alle paar Sekunden kippt die Welt in die Spiegelphase – dann sind links und rechts vertauscht. Der Boden warnt dich vorher.',
     ruleShort:'Spiegelphasen · Seitenwechsel',
     mob:{name:'Spiegelritter',kind:'custom',id:'mirrorknight',col:'#d8f4ff',eye:0xffffff,s:7}},
@@ -386,7 +386,7 @@ AD7[38]={
 window.AD7=window.AD7||{};
 AD7[39]={
   area:{name:'Düsterwald',a:'#1a1830',b:'#14122a',wall:0x241f45,glow:0x9a7aff,fog:'#07060f',
-    deco:{t:'cone',c:0x3a2a60,e:.4},
+    deco:{t:'cone',c:0x1a1230,e:0},
     rule:'Düsterwald: Es ist stockdunkel – Eier siehst du erst aus etwa 55 Metern Nähe. Folge den Irrlichtern, aber der Hirsch sieht dich immer.',
     ruleShort:'Dunkelheit · Eier erst nah sichtbar',
     mob:{name:'Schattenhirsch',kind:'custom',id:'hollowstag',col:'#2a2048',eye:0xb07aff,s:7.2}},
@@ -403,7 +403,7 @@ AD7[39]={
 window.AD7=window.AD7||{};
 AD7[40]={
   area:{name:'Sturminseln',a:'#4a5a78',b:'#3e4e6a',wall:0x3a4a6a,glow:0xffe860,fog:'#101828',
-    deco:{t:'bush',c:0xc8d4e8,e:.2},
+    deco:{t:'bush',c:0x5a6888,e:0},
     rule:'Sturminseln: Alle 14 Sekunden zieht eine Sturmböe auf. Ein Blitz warnt dich – dann trägt dich der Wind Richtung Plot oder bremst dich aus. Der Donnervogel liebt den Sturm.',
     ruleShort:'Sturmböen · Blitzwarnung',
     mob:{name:'Donnervogel',kind:'custom',id:'thunderbird',col:'#c8d4e8',eye:0xffe860,s:7.4}},
@@ -420,7 +420,7 @@ AD7[40]={
 window.AD7=window.AD7||{};
 AD7[41]={
   area:{name:'Singularität',a:'#120818',b:'#0e0612',wall:0x2a1040,glow:0xff5ad0,fog:'#050208',
-    deco:{t:'octa',c:0xff5ad0,e:1.1},
+    deco:{t:'octa',c:0x3a1048,e:.15},
     rule:'Singularität: Der Sog hält dich zurück, und die Leere wird gieriger mit jedem Ei, das du trägst: Pro Ei wird der Herold 9 % schneller. Wer zu viel trägt, wird verschlungen.',
     ruleShort:'Sog · Beute-Gier',
     mob:{name:'Leerenherold',kind:'custom',id:'voidherald',col:'#1a0a28',eye:0xff5ad0,s:7.8}},
@@ -3473,6 +3473,9 @@ function gl(par,col,s,op,x,y,z){const sp=new THREE.Sprite(new THREE.SpriteMateri
 const glow=(c,e,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,emissive:c,emissiveIntensity:e===undefined?1:e,roughness:.4},o||{}));
 const std=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.5,metalness:.3},o||{}));
 const add=(c,o)=>new THREE.MeshBasicMaterial(Object.assign({color:c,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide},o||{}));
+const TC={};
+W2.tex=function(key,fn){return TC[key]||(TC[key]=E6.tex(128,128,(x,w,h)=>{fn(x,w,h,E6.rng(key.length*977+key.charCodeAt(0)));},1));};
+W2.skyTex=function(c){return E6.tex(64,128,(x,w,h)=>{x.fillStyle='#000';x.fillRect(0,0,w,h);const r=E6.rng(5);for(let i=0;i<46;i++){x.fillStyle=r()<.5?c:'#ffffff';x.globalAlpha=.4+r()*.6;x.fillRect(4+((r()*5)|0)*12,4+((r()*30)|0)*4,5,2.5);}});};
 W2.TAU=TAU;W2.PI=PI;W2.hsl=hsl;W2.mk=mk;W2.grp=grp;W2.gl=gl;W2.glow=glow;W2.std=std;W2.add=add;
 
 /* ---------- Landschaft: cfg = {seed,hue,sat,lig,terr,floor,suns,stars,objs,dust,fn} ---------- */
@@ -3487,7 +3490,7 @@ W2.env=function(cfg){return(x0,len,A)=>{
     else if(T.k==='flat')h=Math.abs(Math.sin(x*.03))*T.amp*.2;
     else h=Math.abs(Math.sin(x*.018+d*.03))*T.amp+Math.abs(Math.sin(x*.043-d*.05+1.7))*T.amp*.45;
     return a*h+E6.sstep(0,9,d-11)*(1-a)*(.5+.4*Math.sin(x*.2));};
-  const ter=E6.terrain(root,x0,len,{hfn:hf,step:3,colfn:(h,x,z,c)=>{c.setHSL((cfg.hue+Math.sin(x*.004+Math.abs(z)*.006)*(cfg.hueV||.05)+1)%1,cfg.sat,cfg.lig+Math.min(.2,Math.max(0,h)*.01)+.03*Math.sin(x*.7)*Math.sin(z*.6));},
+  const ter=E6.terrain(root,x0,len,{hfn:hf,step:3,colfn:(h,x,z,c)=>{c.setHSL((cfg.hue+Math.sin(x*.004+Math.abs(z)*.006)*(cfg.hueV||.05)+1)%1,cfg.sat,cfg.lig+.03+Math.min(.25,Math.max(0,h)*.012)+.03*Math.sin(x*.7)*Math.sin(z*.6));},
     mat:Object.assign({flatShading:true,roughness:.4,metalness:.3,emissive:cfg.emi||0x080818,emissiveIntensity:.7},cfg.tmat||{})});
   /* Boden im Gang: animiertes Muster */
   const kinds={grid:0,wave:1,mirror:2,dark:3,storm:4,void:5};
@@ -3517,6 +3520,14 @@ W2.env=function(cfg){return(x0,len,A)=>{
       if(im.setColorAt&&o.col)im.setColorAt(i,o.col(R));}
     if(im.instanceColor)im.instanceColor.needsUpdate=true;
     return{im:im,d:d,o:o,n:n};});
+  let skl=null;
+  if(cfg.skyline){const o=cfg.skyline,n=E6.qn(o.n);skl=new THREE.InstancedMesh(o.geo(),o.mat(),n);skl.frustumCulled=false;
+    for(let i=0;i<n;i++){const sd=R()<.5?-1:1,w=o.w[0]+R()*(o.w[1]-o.w[0]),h=o.h[0]+R()*(o.h[1]-o.h[0]),z=sd*(o.z[0]+R()*(o.z[1]-o.z[0]));
+      _e.set(0,R()*TAU,0);_q.setFromEuler(_e);_p.set(x0-30+R()*(len+60),h*.5-2,z);_s.set(w,h,w);_m.compose(_p,_q,_s);skl.setMatrixAt(i,_m);if(skl.setColorAt&&o.col)skl.setColorAt(i,o.col(R));}
+    if(skl.instanceColor)skl.instanceColor.needsUpdate=true;root.add(skl);sky.push(skl);}
+  const beams=[];if(cfg.beam){const bt=E6.tex(16,128,(x,w,h)=>{const g=x.createLinearGradient(0,h,0,0);g.addColorStop(0,'rgba(255,255,255,.9)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,w,h);});
+    for(let i=0;i<E6.qn(cfg.beam.n);i++){const m=new THREE.Mesh(new THREE.PlaneGeometry(cfg.beam.w*(.5+R()),cfg.beam.h*(.6+R()*.8)),new THREE.MeshBasicMaterial({map:bt,color:cfg.beam.c,transparent:true,opacity:cfg.beam.o||.35,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false}));
+      m.geometry.translate(0,m.geometry.parameters.height/2,0);const sd=R()<.5?-1:1;m.position.set(x0+R()*len,-2,sd*(24+R()*90));m.rotation.y=R()*3;root.add(m);beams.push({m:m,ph:R()*TAU});}}
   const dust=cfg.dust?E6.points(root,E6.qn(cfg.dust.n),cfg.dust.size||.4,{op:.9}):null,dv=dust?new Float32Array(dust.n):null;
   if(dust)for(let i=0;i<dust.n;i++){dust.pos[i*3]=x0+R()*len;dust.pos[i*3+1]=.3+R()*13;dust.pos[i*3+2]=(R()-.5)*80;dv[i]=(cfg.dust.vy||.5)*(.4+R());const c=hsl(cfg.dust.h+R()*(cfg.dust.hv||.1),.8,.65);dust.col[i*3]=c.r;dust.col[i*3+1]=c.g;dust.col[i*3+2]=c.b;}
   let skyOn=true,fr=0;const extra=cfg.extra?cfg.extra(root,x0,len,R,ter):null;
@@ -3530,6 +3541,7 @@ W2.env=function(cfg){return(x0,len,A)=>{
       _s.set(d.w,d.h,d.w);_m.compose(_p,_q,_s);g.im.setMatrixAt(i,_m);}g.im.instanceMatrix.needsUpdate=true;
       if(o.emi)g.im.material.emissive.copy(hsl(o.emi(t),.7,.45));}
     if(dust){const pp=dust.pos;for(let i=0;i<dust.n;i++){pp[i*3+1]+=dv[i]*dt;pp[i*3]+=Math.sin(t*.5+i)*dt*.4;if(pp[i*3+1]>14)pp[i*3+1]=.3;if(pp[i*3+1]<0)pp[i*3+1]=14;}dust.g.attributes.position.needsUpdate=true;}
+    for(const b of beams){b.m.material.opacity=(cfg.beam.o||.35)*(.7+.3*Math.sin(t*.6+b.ph));b.m.visible=o;}
     if(extra)extra(t,dt,px);
   }};};};
 
@@ -3815,12 +3827,14 @@ const brass=()=>std(0xe0a850,{flatShading:true,roughness:.4,metalness:.2,emissiv
 const clockTex=()=>E6.tex(256,256,(x,w,h)=>{x.fillStyle='#f4e8c8';x.beginPath();x.arc(128,128,124,0,TAU);x.fill();x.strokeStyle='#6a4a1c';x.lineWidth=8;x.stroke();
   for(let i=0;i<12;i++){const a=i/12*TAU;x.lineWidth=i%3?4:9;x.beginPath();x.moveTo(128+Math.sin(a)*98,128-Math.cos(a)*98);x.lineTo(128+Math.sin(a)*114,128-Math.cos(a)*114);x.stroke();}});
 const gearG=n=>{const g=new THREE.CylinderGeometry(1,1,.3,n);g.rotateX(PI/2);return g;};
-ENV6[36]=W2.env({seed:3701,hue:.09,sat:.45,lig:.1,terr:{k:'terraces',amp:14},floor:{k:'grid',c1:0x1a1208,c2:0x7a5a22},stars:{n:500,tints:[[1,.85,.5],[1,.7,.4]]},
+ENV6[36]=W2.env({seed:3701,hue:.09,sat:.45,lig:.1,terr:{k:'terraces',amp:18},floor:{k:'grid',c1:0x1a1208,c2:0x7a5a22},stars:{n:500,tints:[[1,.85,.5],[1,.7,.4]]},
   suns:[[0xffc060,520,700,60,-190],[0xff8a30,300,640,40,170,.6]],
-  objs:[{n:44,geo:()=>gearG(12),mat:()=>std(0xb8863a,{flatShading:true,metalness:.7,roughness:.4}),w:[5,15],h:[5,15],z:[18,110],y:[8,50],spin:.5,spinZ:1},
-        {n:26,geo:()=>new THREE.CylinderGeometry(.6,1,1,6),mat:()=>std(0x6a4a1c,{flatShading:true}),w:[2.5,5],h:[14,42],z:[16,70],ground:1,base:.5},
+  objs:[{n:44,geo:()=>gearG(12),mat:()=>std(0x9a8060,{map:W2.tex('g37',(x,w,h,r)=>{x.fillStyle='#8a6428';x.fillRect(0,0,w,h);x.strokeStyle='#4a3010';x.lineWidth=3;for(let i=0;i<6;i++){x.beginPath();x.arc(64,64,12+i*9,0,TAU);x.stroke();}x.fillStyle='#e0b060';for(let i=0;i<14;i++){x.beginPath();x.arc(10+r()*108,10+r()*108,2.4,0,TAU);x.fill();}}),emissive:0x2a1808,emissiveIntensity:.7,roughness:.5,metalness:.2}),w:[5,15],h:[5,15],z:[26,120],y:[8,50],spin:.5,spinZ:1},
+        {n:26,geo:()=>new THREE.CylinderGeometry(.6,1,1,6),mat:()=>std(0x5a3e18,{flatShading:true,emissive:0x1a0e04,emissiveIntensity:.8}),w:[2.5,5],h:[14,42],z:[18,70],ground:1,base:.5},
         {n:16,geo:()=>new THREE.OctahedronGeometry(1),mat:()=>glow(0xffc060,1.2),w:[.6,1.4],h:[1,2.2],z:[14,60],y:[10,40],spin:1,bob:0}],
   dust:{n:500,h:.08,hv:.05,vy:.5},
+  skyline:{n:70,geo:()=>new THREE.BoxGeometry(1,1,1),mat:()=>new THREE.MeshStandardMaterial({color:0x2a1c0c,emissive:0xffffff,emissiveMap:W2.skyTex('#ffc060'),emissiveIntensity:.9,roughness:.9}),w:[8,20],h:[40,130],z:[150,360],col:r=>new THREE.Color().setHSL(.08,.4,.08+r()*.08)},
+  beam:{n:8,w:6,h:120,c:0xffc060,o:.28},
   extra:(root,x0,len)=>{const g=grp(root);const face=mk(new THREE.CircleGeometry(60,48),new THREE.MeshBasicMaterial({map:clockTex(),transparent:true,opacity:.85,fog:false}),g,0,0,0);face.rotation.y=-PI/2;
     const hands=[0,1].map(i=>{const h=mk(new THREE.BoxGeometry(1.4,i?44:30,.8),new THREE.MeshBasicMaterial({color:0x3a2a10,fog:false}),g,0,0,0);return h;});hands.forEach(h=>{h.geometry.translate(0,h.geometry.parameters.height/2,0);h.rotation.y=-PI/2;h.position.x=-.5;});
     g.rotation.order='YXZ';return(t,dt,px)=>{g.position.set(px+650,130,-30);hands[0].rotation.set(0,0,-t*.3);hands[1].rotation.set(0,0,-t*.025);g.visible=P.x>=x0-4&&P.x<=x0+len+4;};}
@@ -3866,13 +3880,15 @@ AREAFX[36]={
 /* ===================== Gebiet 38: Nullgravitation ===================== */
 (function(){
 const {mk,grp,gl,glow,std,add,hsl,TAU,PI}=W2;
-const rock=(c)=>std(c||0x6a70a8,{flatShading:true,roughness:.7,metalness:.1,emissive:0x1a1a50,emissiveIntensity:.6});
+const rock=(c)=>std(0xffffff,{map:W2.tex('r38',(x,w,h,r)=>{x.fillStyle='#3a3e70';x.fillRect(0,0,w,h);for(let i=0;i<60;i++){x.fillStyle='rgba(20,20,60,.5)';x.fillRect(r()*w,r()*h,3+r()*10,2);}x.strokeStyle='#9aa8ff';x.lineWidth=1.5;for(let i=0;i<5;i++){x.beginPath();x.moveTo(r()*w,r()*h);x.lineTo(r()*w,r()*h);x.stroke();}}),color:c||0xffffff,flatShading:true,roughness:.75,metalness:.1,emissive:0x1a1a50,emissiveIntensity:.5});
 ENV6[37]=W2.env({seed:3801,hue:.64,sat:.4,lig:.1,terr:{k:'waves',amp:10},floor:{k:'wave',c1:0x0a0a2a,c2:0x4a4ad0},stars:{n:1300,tints:[[.8,.85,1],[1,.8,1],[.7,1,1]],size:3.4},
   suns:[[0x8a98ff,650,720,90,-200],[0xff9ae0,420,640,60,190,.7]],
-  objs:[{n:50,geo:()=>new THREE.DodecahedronGeometry(1,0),mat:()=>rock(),w:[1.5,7],h:[1.2,6],z:[14,95],y:[2,45],spin:.5,tilt:1,bob:3},
+  objs:[{n:50,geo:()=>new THREE.DodecahedronGeometry(1,0),mat:()=>rock(),w:[1.5,7],h:[1.2,6],z:[22,100],y:[2,45],spin:.5,tilt:1,bob:3},
         {n:12,geo:()=>new THREE.SphereGeometry(1,16,12),mat:()=>glow(0x9aa8ff,.9,{transparent:true,opacity:.5}),w:[2,6],h:[2,6],z:[22,100],y:[10,50]},
         {n:30,geo:()=>new THREE.OctahedronGeometry(1),mat:()=>glow(0xc0d0ff,1.2),w:[.3,.8],h:[.5,1.4],z:[12,40],y:[2,20],spin:2,bob:2}],
-  dust:{n:700,h:.62,hv:.2,vy:-.3,size:.5}
+  dust:{n:700,h:.62,hv:.2,vy:-.3,size:.5},
+  skyline:{n:60,geo:()=>new THREE.ConeGeometry(.5,1,5),mat:()=>new THREE.MeshStandardMaterial({color:0x1c1c50,emissive:0x2a2a90,emissiveIntensity:.6,roughness:.8,flatShading:true}),w:[10,36],h:[60,200],z:[150,380],col:r=>new THREE.Color().setHSL(.64+r()*.1,.4,.2)},
+  beam:{n:9,w:8,h:150,c:0x9aa8ff,o:.3},
 });
 MOB6.gravgolem=function(C,inner,H){
   const root=grp(inner),K=.95;root.scale.setScalar(K);const fig=grp(root,0,3.2,0),R=rock(),RG=rock(0x9aa8ff);
@@ -3912,15 +3928,17 @@ AREAFX[37]={
 /* ===================== Gebiet 39: Spiegelkabinett ===================== */
 (function(){
 const {mk,grp,gl,glow,std,add,hsl,TAU,PI}=W2;
-const mir=(c)=>std(c||0xd8f4ff,{flatShading:true,roughness:.1,metalness:.6,emissive:0x2a4a5a,emissiveIntensity:.9});
+const mir=(c)=>std(0xffffff,{map:W2.tex('m39',(x,w,h,r)=>{const g=x.createLinearGradient(0,0,w,h);g.addColorStop(0,'#5a8aa8');g.addColorStop(.5,'#d8f4ff');g.addColorStop(1,'#4a7088');x.fillStyle=g;x.fillRect(0,0,w,h);x.strokeStyle='rgba(255,255,255,.7)';x.lineWidth=5;for(let i=0;i<4;i++){x.beginPath();x.moveTo(-10+i*40,h);x.lineTo(40+i*40,0);x.stroke();}}),color:c||0xffffff,flatShading:true,roughness:.15,metalness:.4,emissive:0x1a3a4a,emissiveIntensity:.6});
 const MP=20,MD=5;                                   /* Spiegelphase: alle 20 s für 5 s */
 const mirrored=t=>(t%MP)>=MP-MD, warn=t=>(t%MP)>=MP-MD-2&&!mirrored(t);
 ENV6[38]=W2.env({seed:3901,hue:.55,sat:.15,lig:.17,terr:{k:'terraces',amp:10},floor:{k:'mirror',c1:0x10202c,c2:0x6a90a8},stars:{n:600,tints:[[.9,1,1],[1,1,1]]},
   suns:[[0xe8faff,560,700,70,-190],[0xe8faff,360,-700,60,170,.7]],
-  objs:[{n:34,geo:()=>new THREE.BoxGeometry(1,1,.12),mat:()=>mir(),w:[3,9],h:[8,26],z:[14,80],ground:1,base:.5,tilt:.4},
+  objs:[{n:34,geo:()=>new THREE.BoxGeometry(1,1,.12),mat:()=>mir(),w:[3,9],h:[8,26],z:[22,90],ground:1,base:.5,tilt:.4},
         {n:30,geo:()=>new THREE.CylinderGeometry(1,1,.1,6),mat:()=>mir(0xffffff),w:[1.5,5],h:[1.5,5],z:[14,90],y:[8,40],spin:1.2,tilt:1.5,bob:2},
         {n:30,geo:()=>new THREE.OctahedronGeometry(1),mat:()=>glow(0xcff4ff,1.3),w:[.3,.9],h:[.6,1.8],z:[12,36],y:[2,18],spin:2}],
   dust:{n:500,h:.52,hv:.1,vy:.3},
+  skyline:{n:60,geo:()=>new THREE.BoxGeometry(1,1,1),mat:()=>new THREE.MeshStandardMaterial({color:0x3a5a70,emissive:0xaaeaff,emissiveMap:W2.skyTex('#aaeaff'),emissiveIntensity:.8,roughness:.3,metalness:.5}),w:[4,12],h:[50,170],z:[140,360],col:r=>new THREE.Color().setHSL(.55,.3,.2+r()*.2)},
+  beam:{n:9,w:5,h:140,c:0xe8faff,o:.3},
   extra:()=>t=>{}
 });
 MOB6.mirrorknight=function(C,inner,H){
@@ -3961,13 +3979,15 @@ AREAFX[38]={
 /* ===================== Gebiet 40: Düsterwald ===================== */
 (function(){
 const {mk,grp,gl,glow,std,add,hsl,TAU,PI}=W2;
-const dk=(c)=>std(c||0x2a2048,{flatShading:true,roughness:.8,metalness:.05,emissive:0x140c30,emissiveIntensity:.8});
+const dk=(c)=>std(0xffffff,{map:W2.tex('d40',(x,w,h,r)=>{x.fillStyle='#2a2048';x.fillRect(0,0,w,h);for(let i=0;i<30;i++){x.fillStyle='rgba(10,5,30,.6)';x.fillRect(r()*w,0,2+r()*3,h);}x.strokeStyle='#8a6aff';x.lineWidth=1.5;for(let i=0;i<4;i++){x.beginPath();x.moveTo(r()*w,0);x.bezierCurveTo(r()*w,40,r()*w,80,r()*w,h);x.stroke();}}),color:c||0xffffff,flatShading:true,roughness:.85,metalness:.05,emissive:0x1a1040,emissiveIntensity:.7});
 ENV6[39]=W2.env({seed:4001,hue:.74,sat:.35,lig:.06,terr:{k:'spikes',amp:16},floor:{k:'dark',c1:0x06050e,c2:0x3a2a70},stars:{n:900,tints:[[.7,.6,1],[.9,.8,1]],size:2.6},
   suns:[[0x8a6aff,600,720,70,-200,.7]],emi:0x0a0620,
-  objs:[{n:60,geo:()=>new THREE.ConeGeometry(.5,1,5),mat:()=>dk(0x30244f),w:[1.5,4],h:[10,34],z:[13,90],ground:1,base:.5,tilt:.2},
+  objs:[{n:60,geo:()=>new THREE.ConeGeometry(.5,1,5),mat:()=>dk(0x30244f),w:[1.5,4],h:[10,34],z:[18,95],ground:1,base:.5,tilt:.2},
         {n:36,geo:()=>new THREE.SphereGeometry(1,10,6,0,TAU,0,PI/2),mat:()=>glow(0x9a7aff,1.1),w:[.7,2.4],h:[.7,2],z:[12,60],ground:1,base:0},
         {n:40,geo:()=>new THREE.SphereGeometry(1,8,6),mat:()=>glow(0xc8b0ff,1.8),w:[.2,.45],h:[.2,.45],z:[11,45],y:[1,14],bob:2.5}],
-  dust:{n:700,h:.72,hv:.1,vy:.35,size:.45}
+  dust:{n:700,h:.72,hv:.1,vy:.35,size:.45},
+  skyline:{n:110,geo:()=>new THREE.ConeGeometry(.6,1,6),mat:()=>new THREE.MeshStandardMaterial({color:0x120c28,emissive:0x3a2a80,emissiveIntensity:.5,roughness:.9,flatShading:true}),w:[8,26],h:[40,150],z:[120,340],col:r=>new THREE.Color().setHSL(.72+r()*.06,.4,.07+r()*.07)},
+  beam:{n:10,w:5,h:90,c:0x8a6aff,o:.22},
 });
 MOB6.hollowstag=function(C,inner,H){
   const root=grp(inner),K=.95;root.scale.setScalar(K);const fig=grp(root,0,0,0),D=dk(0x241a40),G=glow(0xb07aff,2);
@@ -4007,15 +4027,17 @@ AREAFX[39]={
 /* ===================== Gebiet 41: Sturminseln ===================== */
 (function(){
 const {mk,grp,gl,glow,std,add,hsl,TAU,PI}=W2;
-const cl=(c)=>std(c||0xe0e8f8,{flatShading:true,roughness:.9,metalness:0,emissive:0x3a4660,emissiveIntensity:.7});
+const cl=(c)=>std(0xffffff,{map:W2.tex('c41',(x,w,h,r)=>{const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#e8eef8');g.addColorStop(1,'#7a88a8');x.fillStyle=g;x.fillRect(0,0,w,h);for(let i=0;i<40;i++){x.fillStyle='rgba(60,76,110,.18)';x.beginPath();x.arc(r()*w,r()*h,4+r()*14,0,TAU);x.fill();}}),color:c||0xc0cce4,flatShading:true,roughness:.95,metalness:0,emissive:0x28344c,emissiveIntensity:.6});
 const GP=14,GD=4;                                  /* alle 14 s eine Böe von 4 s */
 const gustOn=t=>(t%GP)>=GP-GD, gustWarn=t=>(t%GP)>=GP-GD-1.6&&!gustOn(t), gustDir=t=>(Math.floor(t/GP)%2)?1:-1; /* -1 = Rückenwind zum Plot */
 ENV6[40]=W2.env({seed:4101,hue:.6,sat:.25,lig:.16,terr:{k:'waves',amp:14},floor:{k:'storm',c1:0x141c30,c2:0x6a82b8},stars:{n:300,tints:[[1,1,.8]]},
   suns:[[0xffe860,380,700,80,-200,.5]],emi:0x101828,
-  objs:[{n:36,geo:()=>new THREE.SphereGeometry(1,10,8),mat:()=>cl(),w:[6,18],h:[2.5,6],z:[16,110],y:[-6,30],drift:6,bob:2},
+  objs:[{n:36,geo:()=>new THREE.SphereGeometry(1,10,8),mat:()=>cl(),w:[6,18],h:[2.5,6],z:[24,120],y:[-6,30],drift:6,bob:2},
         {n:20,geo:()=>new THREE.CylinderGeometry(1,.4,1,7),mat:()=>std(0x5a6a88,{flatShading:true}),w:[4,10],h:[6,16],z:[16,90],y:[0,6],bob:1.5},
         {n:36,geo:()=>new THREE.OctahedronGeometry(1),mat:()=>glow(0xffe860,1.4),w:[.2,.5],h:[1,3],z:[12,70],y:[4,40],spin:3}],
   dust:{n:600,h:.6,hv:.05,vy:-1.4,size:.35},
+  skyline:{n:50,geo:()=>new THREE.CylinderGeometry(.6,1,1,7),mat:()=>new THREE.MeshStandardMaterial({color:0x2a3450,emissive:0x4a5a88,emissiveIntensity:.5,roughness:.9,flatShading:true}),w:[14,40],h:[30,110],z:[130,360],col:r=>new THREE.Color().setHSL(.6,.25,.18+r()*.1)},
+  beam:{n:12,w:7,h:110,c:0xffe8a0,o:.2},
   extra:(root)=>{const bolt=new THREE.Mesh(new THREE.PlaneGeometry(3,120),new THREE.MeshBasicMaterial({color:0xfff4a0,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide}));root.add(bolt);let nt=3;
     return(t,dt,px)=>{if(t>nt){nt=t+2+Math.random()*4;bolt.position.set(px+200+Math.random()*300,60,(Math.random()-.5)*300);bolt.userData.f=1;bolt.rotation.y=Math.random()*3;}
       const f=bolt.userData.f||0;bolt.material.opacity=f*(.5+.5*Math.random());bolt.userData.f=Math.max(0,f-dt*5);};}
@@ -4062,9 +4084,11 @@ const bk=(c)=>std(c||0x1a0a28,{flatShading:true,roughness:.6,metalness:.3,emissi
 ENV6[41]=W2.env({seed:4201,hue:.85,sat:.4,lig:.05,terr:{k:'spikes',amp:12},floor:{k:'void',c1:0x04020a,c2:0xff40c0},stars:{n:1600,tints:[[1,.6,.9],[.7,.6,1],[1,1,1]],size:3.2},
   suns:[[0xff5ad0,900,700,70,-210,.8],[0x000000,500,700,70,-210,1]],emi:0x1a0420,
   objs:[{n:30,geo:()=>new THREE.TorusGeometry(1,.06,8,40),mat:()=>add(0xff5ad0,{opacity:.6}),w:[6,24],h:[6,24],z:[16,110],y:[8,60],spin:.5,tilt:3},
-        {n:40,geo:()=>new THREE.OctahedronGeometry(1),mat:()=>bk(),w:[1.5,5],h:[3,12],z:[14,80],y:[2,40],spin:1,tilt:1,bob:3},
+        {n:40,geo:()=>new THREE.OctahedronGeometry(1),mat:()=>bk(),w:[1.5,5],h:[3,12],z:[22,90],y:[2,40],spin:1,tilt:1,bob:3},
         {n:30,geo:()=>new THREE.OctahedronGeometry(1),mat:()=>glow(0xff5ad0,1.6),w:[.25,.7],h:[.5,1.4],z:[12,40],y:[2,20],spin:2}],
-  dust:{n:800,h:.85,hv:.1,vy:-.6,size:.4}
+  dust:{n:800,h:.85,hv:.1,vy:-.6,size:.4},
+  skyline:{n:80,geo:()=>new THREE.OctahedronGeometry(1),mat:()=>new THREE.MeshStandardMaterial({color:0x0c0414,emissive:0xff40c0,emissiveMap:W2.skyTex('#ff40c0'),emissiveIntensity:.7,roughness:.5,metalness:.4,flatShading:true}),w:[8,26],h:[60,220],z:[130,360],col:r=>new THREE.Color().setHSL(.85,.5,.05+r()*.06)},
+  beam:{n:10,w:6,h:160,c:0xff5ad0,o:.3},
 });
 MOB6.voidherald=function(C,inner,H){
   const root=grp(inner),K=.95;root.scale.setScalar(K);const fig=grp(root,0,4.8,0);
