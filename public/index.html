@@ -453,7 +453,7 @@ const AD7=window.AD7||{};
 (function(){const ks=Object.keys(AD7).map(Number);const mx=ks.length?Math.max.apply(null,ks):34;
   for(let k=35;k<=mx;k++)if(!AD7[k])AD7[k]={area:{name:'Platzhalter '+(k+1),a:'#333340',b:'#2a2a36',wall:0x222230,glow:0x8888aa,fog:'#101018',deco:{t:'box',c:0x8888aa,e:0},mob:{name:'Platzhalter',kind:'quad',col:'#444455',eye:0xffffff,s:6}},tier:{name:'Platzhalter'+k,col:0x8888aa,desc:''},pets:[0,1,2,3,4].map(i=>({name:'Platzhalter'+k+'-'+i,col:'#888899',desc:''}))};})();
 const AD7K=Object.keys(AD7).map(Number).sort((a,b)=>a-b);
-const PLOT_W=40, PLOT_Z=30, NAREAS=35+AD7K.length, W2LEN=[6000,7000,8000,9000,10000,12000], W2GAP=1600, SAFE2=30, ALEN=Array.from({length:NAREAS},(_,i)=>i>=36?W2LEN[Math.min(i-36,5)]:60+3*i), AX=[], W1END=(()=>{let x=0;for(let i=0;i<Math.min(NAREAS,36);i++)x+=ALEN[i];return x;})(), END=(()=>{let x=0;for(let i=0;i<NAREAS;i++){if(i===36)x+=W2GAP;AX.push(x);x+=ALEN[i];}return x;})(), HW=10, PADS_N=8, MAXE=6, NSLOTS=6, LOBBY_R=58, LOBBY_RH=72, PLOT_HX=10, PLOT_HZ=11, GATE_HZ=4;
+const PLOT_W=40, PLOT_Z=30, NAREAS=35+AD7K.length, W2LEN=[2000,2333,2667,3000,3333,4000], W2GAP=1600, SAFE2=30, ALEN=Array.from({length:NAREAS},(_,i)=>i>=36?W2LEN[Math.min(i-36,5)]:60+3*i), AX=[], W1END=(()=>{let x=0;for(let i=0;i<Math.min(NAREAS,36);i++)x+=ALEN[i];return x;})(), END=(()=>{let x=0;for(let i=0;i<NAREAS;i++){if(i===36)x+=W2GAP;AX.push(x);x+=ALEN[i];}return x;})(), HW=10, PADS_N=8, MAXE=6, NSLOTS=6, LOBBY_R=58, LOBBY_RH=72, PLOT_HX=10, PLOT_HZ=11, GATE_HZ=4;
 /* Lobby: 6 Plots im Halbkreis um den Gangeingang (0,0), jeder Plot schaut zur Mitte.
    Lokales Koordinatensystem eines Plots: lx zeigt zur Mitte (Tor bei lx=+10), lz läuft am Zaun entlang. */
 const SLOTS=[];
@@ -560,7 +560,7 @@ if(S.dex.some(d=>!d))S.won=false;
 S.pets.forEach(p=>{if(p.v===undefined)p.v=p.shiny?1:0;});
 while(!S.eggFound||S.eggFound.length<NR){S.eggFound=S.eggFound||[];S.eggFound.push(0);}
 S.pets.forEach(p=>{delete p.ab;});
-if(!S.mx){S.mx=Math.round(1500+Math.random()*(((typeof ALEN!=='undefined'&&ALEN[39])||9000)-3000));S.ms=Math.random()<.5?-1:1;}S.boost=S.boost|0;S.merch=S.merch|0;
+{const L=(typeof ALEN!=='undefined'&&ALEN[39])||3000;if(!S.mx||S.mx<600||S.mx>L-600){S.mx=Math.round(600+Math.random()*(L-1200));}}if(!S.ms){S.ms=Math.random()<.5?-1:1;}S.boost=S.boost|0;S.merch=S.merch|0;
 if(!S.ver||S.ver<3){
   const OLD=t=>t<8?[1.5,6,25,110,600,3500,20000,120000][t]:120000*Math.pow(3.2,t-7);
   S.pets.forEach(p=>{p.mps=Math.round(p.mps/OLD(p.r)*RAR[p.r].mps*10)/10;});

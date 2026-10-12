@@ -2,7 +2,7 @@
  * Der Server speichert nichts dauerhaft. Er verteilt nur, was jeder Spieler von sich meldet:
  * Position, getragene Eier, ausgerüstete Tiere, Brutkästen, Bosse. Spielstände bleiben lokal im Browser. */
 const MAX_PLAYERS = 6;
-const KEYS = new Set(['p', 'c', 'pt', 'pd', 'mb', 'n']);
+const KEYS = new Set(['p', 'c', 'pt', 'pd', 'mb', 'n', 'pl', 'cs']);
 
 export class Room {
   constructor(state, env) {
