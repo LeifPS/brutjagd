@@ -4825,7 +4825,7 @@ function updateEggs(dt){
 function inSafe(){if(P.x<0)return true;return NAREAS>36&&P.x>=AX[36]&&P.x<AX[36]+SAFE2;}
 function checkPlot(){if(inSafe()){if(carried.length)secure();else if(mobs.length)despawnMobs(true);}}
 let time=0;
-function updateVisuals(dt){if(window.MH_TEST&&S.money<1e30)S.money=1e30;dtGlobal=dt;updateEnv(time,dt);updateShopsVis(dt,time);updateShopLabels();tickHold(dt);
+function updateVisuals(dt){if(window.MH_TEST){if(S.money<1e30)S.money=1e30;if(!S.merch)S.merch=1;}dtGlobal=dt;updateEnv(time,dt);updateShopsVis(dt,time);updateShopLabels();tickHold(dt);
   eggs.forEach((e,i)=>{
     if(!e.g.visible||!e.m)return;
     const rar=Math.min(e.r,14),pop=Math.min(1,(time-(e.t0===undefined?(e.t0=time):e.t0))/.6),ps=pop<1?1+Math.sin(pop*Math.PI)*.35-(1-pop)*.9:1;
