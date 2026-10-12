@@ -224,6 +224,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
   .modal{padding:6px}
 }
 @media (prefers-reduced-motion:reduce){.toast{animation:none}#boss.on{animation:none;opacity:1}}
+#wtitle{position:fixed;left:0;right:0;top:34%;text-align:center;font:400 clamp(40px,9vw,92px) var(--display);letter-spacing:6px;color:#fff;text-shadow:0 0 30px #c070ff,0 0 80px #7a2aff;opacity:0;pointer-events:none;z-index:30}#wtitle small{display:block;font-size:.28em;letter-spacing:4px;color:#ffc8ff;margin-top:6px}#wtitle.on{animation:wt 3.4s ease-out forwards}@keyframes wt{0%{opacity:0;transform:scale(1.25)}12%{opacity:1;transform:scale(1)}70%{opacity:1}100%{opacity:0;transform:scale(.98)}}
 </style>
 <div id="app">
   <canvas id="c"></canvas>
@@ -257,6 +258,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
   </div>
   <div id="toasts"></div>
   <div id="boss"></div>
+  <div id="wtitle"></div>
   <div id="joy"><i></i></div>
   <button id="btnPick">Aufheben</button>
   <div class="modal" id="mInv" hidden><div class="sheet">
@@ -853,13 +855,44 @@ function setPlotLabel(s,name,mine,inc){
   const L=[{t:'PLOT '+(s+1),size:56,col:SLOTCOL[s]},{t:name?(mine?name+' (du)':name):'Frei',size:34,col:name?'#ffffff':'#a79fc4'}];
   if(name)L.push({t:it,size:44,col:'#7dffb0'});p.lab.userData.draw(L);
 }
+const PORTALS=[];
+const VORTEX_FS='uniform float t;uniform float aw;uniform vec3 c1;uniform vec3 c2;varying vec2 vU;void main(){vec2 p=vU*2.-1.;float r=length(p);if(r>1.)discard;float a=atan(p.y,p.x);float sw=sin(a*5.+r*9.-t*(1.+aw*2.5))*.5+.5;float sw2=sin(a*3.-r*14.+t*1.7)*.5+.5;float core=smoothstep(.55,0.,r);float edge=smoothstep(.78,1.,r);vec3 col=mix(c1,c2,sw*sw2)*(.35+.65*(1.-r))+vec3(1.)*core*(.3+.7*aw)+c2*edge*.9;float al=mix(.18,.85,aw)*(1.-smoothstep(.92,1.,r));gl_FragColor=vec4(col*(.35+.65*aw),al);}';
+const VORTEX_VS='varying vec2 vU;void main(){vU=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
+const BARRIER_FS='uniform float t;uniform float op;varying vec2 vU;void main(){vec2 g=vU*vec2(10.,4.);vec2 f=abs(fract(g)-.5);float hex=smoothstep(.42,.5,max(f.x,f.y));float n=.5+.5*sin(vU.x*30.+t*2.+sin(vU.y*12.+t)*2.);float e=smoothstep(0.,.08,vU.y)*smoothstep(0.,.08,1.-vU.y);vec3 col=mix(vec3(.4,.1,.9),vec3(1.,.5,1.),n)*(.45+hex*1.1);gl_FragColor=vec4(col,(.18+.3*n+hex*.5)*op*e);}';
+function makePortal(x,z,ry,o){
+  const col1=new THREE.Color(o.c1),col2=new THREE.Color(o.c2),g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;scene.add(g);
+  const stone=new THREE.MeshStandardMaterial({color:0x2a2440,roughness:.8,emissive:o.c1,emissiveIntensity:.08});
+  const R=o.r||7;
+  for(const s of[-1,1]){const p=new THREE.Mesh(GBOX,stone);p.scale.set(1.6,R*2.4,1.6);p.position.set(0,R*1.2,s*(R+1.2));g.add(p);
+    const cr=new THREE.Mesh(new THREE.OctahedronGeometry(.9),new THREE.MeshBasicMaterial({color:o.c2}));cr.position.set(0,R*2.4+1,s*(R+1.2));g.add(cr);}
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(R+3,R+3.6,.7,40),new THREE.MeshStandardMaterial({color:0x1c1830,roughness:.9}));base.position.y=.3;g.add(base);
+  const rings=[];for(let i=0;i<3;i++){const m=new THREE.Mesh(new THREE.TorusGeometry(R-i*1.1,.28-i*.05,8,48),new THREE.MeshBasicMaterial({color:i?o.c2:o.c1,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}));m.position.set(0,R+.4,0);m.rotation.y=Math.PI/2;g.add(m);rings.push(m);}
+  const rune=new THREE.Mesh(new THREE.CylinderGeometry(R+.9,R+.9,1.2,48,1,true),new THREE.MeshBasicMaterial({map:bandTex(o.c2,10),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,opacity:.8}));rune.position.y=R+.4;rune.rotation.z=Math.PI/2;g.add(rune);
+  const vm=new THREE.ShaderMaterial({uniforms:{t:{value:0},aw:{value:0},c1:{value:col1},c2:{value:col2}},vertexShader:VORTEX_VS,fragmentShader:VORTEX_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide});
+  const vt=new THREE.Mesh(new THREE.CircleGeometry(R-.2,48),vm);vt.position.set(0,R+.4,0);vt.rotation.y=Math.PI/2;g.add(vt);
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(1.2,3.5,90,16,1,true),new THREE.MeshBasicMaterial({color:o.c2,transparent:true,opacity:.0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));beam.position.y=45;g.add(beam);
+  const lab=makeLabel(512,256,13,6.5);lab.position.set(0,R*2.4+5,0);lab.rotation.y=Math.PI/2;g.add(lab);lab.userData.draw(o.lines.map(l=>({t:l[0],size:l[1],col:l[2]||'#fff'})));
+  const pt={x:x,z:z,kind:o.kind,aw:0,vm:vm};PORTALS.push(pt);
+  const half=o.half||80;
+  envList.push({cx:x,half:half,u:{upd(t,dt){
+    const want=o.kind==='to2'?(speed()>=W2V?1:0):1;pt.aw+=(want-pt.aw)*Math.min(1,dt*2);vm.uniforms.t.value=t;vm.uniforms.aw.value=pt.aw;
+    rings.forEach((m,i)=>{m.rotation.x=t*(.3+i*.25)*(i%2?-1:1);m.material.opacity=.35+.55*pt.aw;});rune.rotation.x=t*.2;beam.material.opacity=.03+.1*pt.aw;
+    if(pt.aw>.5&&Math.random()<dt*10*qf()){const a=Math.random()*6.28;emit(x+Math.cos(a)*R*.8*Math.abs(Math.sin(ry)),R+.4+Math.sin(a)*R*.8,z+Math.cos(a)*R*.8*Math.abs(Math.cos(ry)),rand(-.5,.5),rand(.5,2),rand(-.5,.5),o.c2,.9,0);}
+  }}});
+  return pt;
+}
+/* Siegel vor dem Tor zu Welt 2: schimmernde Barriere, die sich auflöst, sobald das Tempo reicht */
 function buildPortal(x,A){
-  const m=new THREE.MeshBasicMaterial({color:0xff9aff,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false});
-  for(let i=0;i<3;i++){const r=new THREE.Mesh(new THREE.TorusGeometry(9.5-i*1.7,.35,8,40),m);r.position.set(x-.8,9,0);r.rotation.y=Math.PI/2;scene.add(r);envList.push({cx:x,half:80,u:{upd(t){r.rotation.x=t*(.4+i*.3)*(i%2?-1:1);}}});}
-  const v=new THREE.Mesh(new THREE.CircleGeometry(7.8,40),new THREE.MeshBasicMaterial({color:0x7a2aff,transparent:true,opacity:.22,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false}));v.position.set(x-.8,9,0);v.rotation.y=Math.PI/2;scene.add(v);
+  const bm=new THREE.ShaderMaterial({uniforms:{t:{value:0},op:{value:1}},vertexShader:VORTEX_VS,fragmentShader:BARRIER_FS,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide});
+  const b=new THREE.Mesh(new THREE.PlaneGeometry(HW*2,8),bm);b.position.set(x-.35,4,0);b.rotation.y=Math.PI/2;scene.add(b);
+  envList.push({cx:x,half:120,u:{upd(t,dt){bm.uniforms.t.value=t;const w=speed()>=W2V?0:1;bm.uniforms.op.value+=(w-bm.uniforms.op.value)*Math.min(1,dt*2);b.visible=bm.uniforms.op.value>.02;}}});
+  makePortal(x+12,-6.2,Math.PI/2,{kind:'to1',c1:0x2a7aff,c2:0x9affff,r:3.6,half:120,lines:[['ZURÜCK',50,'#ffffff'],['zur Lobby',30,'#9affff']]});
+}
+function buildLobbyPortals(){
+  makePortal(-30,0,Math.PI/2,{kind:'to2',c1:0x7a2aff,c2:0xff9aff,r:7,half:90,lines:[['WELTENTOR',44,'#ffffff'],['Welt 2 · ab ⚡ 15M Tempo',30,'#ffb0ff']]});
 }
 function buildWorld(){
-  buildHall();initPlotPads();initShops();initSigns();
+  buildHall();initPlotPads();initShops();initSigns();if(NAREAS>36)buildLobbyPortals();
   for(let i=0;i<NAREAS;i++){
     const A=AREAS[i];buildSection(AX[i],ALEN[i],A);buildDeco(i);
     if(i===36)buildPortal(AX[i],A);
@@ -1879,11 +1912,24 @@ function nearUse(){
   if(!started)return null;let best=null,bd=1e9;
   for(const o of shops){const d=Math.hypot(P.x-o.x,P.z-o.z);if(d<6&&d<bd){bd=d;best={k:o.d.k,x:o.x,z:o.z};}}
   const sg=plots[mySlot]&&plots[mySlot].sign;if(sg){const d=Math.hypot(P.x-sg.x,P.z-sg.z);if(d<5&&d<bd){bd=d;best={k:'slot',x:sg.x,z:sg.z};}}
+  for(const p of PORTALS){const d=Math.hypot(P.x-p.x,P.z-p.z);if(d<7&&d<bd){bd=d;best={k:'portal',p:p,x:p.x,z:p.z};}}
   if(!best)return null;
+  if(best.k==='portal'){const p=best.p;best.hint=p.kind==='to1'?(IS_TOUCH?'Tippe auf „Betreten“':'E drücken')+': zurück zur Lobby':(speed()>=W2V?(IS_TOUCH?'Tippe auf „Betreten“':'E drücken')+': Weltentor betreten':'Das Tor schläft: du brauchst Tempo ⚡ 15M');return best;}
   const u=upInfo(best.k);best.hint=u.mx?UPN[best.k]+': Maximum erreicht':(IS_TOUCH?'Tippe auf „Kaufen“':'E drücken')+' ('+UPN[best.k]+' · $'+fmt(u.c)+(u.ok?'':' · zu wenig Geld')+')';
   return best;
 }
+function worldTitle(a,b){const el=$('wtitle');if(!el)return;el.innerHTML=a+'<small>'+b+'</small>';el.classList.remove('on');void el.offsetWidth;el.classList.add('on');}
+function usePortal(p){
+  if(p.kind==='to2'){
+    if(speed()<W2V){toast('Das Tor schläft: du brauchst Tempo ⚡ 15M','bad');beep(200,.2,'sawtooth',.06,.7);return;}
+    despawnMobs(true);P.x=AX[36]+9;P.z=0;P.vx=P.vz=0;S.w2=1;
+    flashScreen(0xffffff,.9);addShake(.25);beep(330,.8,'sine',.1,2.2);setTimeout(()=>beep(660,1,'triangle',.09,1.8),200);worldTitle('WELT 2','Die Gegenseite');save();
+  }else if(p.kind==='to1'){
+    despawnMobs(true);const sp=spawnOf(mySlot);P.x=sp.x;P.z=sp.z;P.vx=P.vz=0;flashScreen(0x9affff,.7);beep(520,.5,'triangle',.08,.6);worldTitle('LOBBY','Zurück in Welt 1');
+  }
+}
 function buyUp(k,x,z){
+  if(k==='portal'){const n=nearUse();if(n&&n.p)usePortal(n.p);return true;}
   const u=upInfo(k);
   if(u.mx){toast(UPN[k]+': Maximum erreicht');return false;}
   if(!u.ok){toast('Zu wenig Geld: $'+fmt(u.c)+' nötig','bad');beep(200,.15,'sawtooth',.06,.7);return false;}
@@ -4244,7 +4290,7 @@ function updateHUD(){
   else if(tot>0&&S.pads.some(p=>!p))hint='Stell dich auf einen freien Brutkasten, um ein Ei einzusetzen.';
   else if(ai<0&&carried.length===0&&tot===0&&!S.pads.some(p=>p)&&S.pets.length>0)hint='Geh durch das Tor und sammle neue Eier.';
   const h=$('hint');if(cache.hint!==hint){cache.hint=hint;h.textContent=hint;h.classList.toggle('on',!!hint);}
-  const pb=$('btnPick'),showPick=rpn>=0||!!useT||(nearEgg>=0&&carried.length<cap());if(cache.pick!==showPick){cache.pick=showPick;pb.classList.toggle('on',showPick);}const pl=rpn>=0?'Öffnen':useT?'Kaufen':'Aufheben';if(cache.pl!==pl){cache.pl=pl;pb.textContent=pl;}
+  const pb=$('btnPick'),showPick=rpn>=0||!!useT||(nearEgg>=0&&carried.length<cap());if(cache.pick!==showPick){cache.pick=showPick;pb.classList.toggle('on',showPick);}const pl=rpn>=0?'Öffnen':useT?(useT.k==='portal'?'Betreten':'Kaufen'):'Aufheben';if(cache.pl!==pl){cache.pl=pl;pb.textContent=pl;}
   const span=END+PLOT_W;
   $('mmPlayer').style.left=Math.max(0,(P.x+PLOT_W)/span*100)+'%';
   setH('mmMobs',mobs.map(m=>'<i style="left:'+Math.max(0,(m.x+PLOT_W)/span*100)+'%"></i>').join('')+netMinimap());
@@ -4606,6 +4652,7 @@ const FXAPI={get P(){return P;},mobs:mobs,eggs:eggs,HW:HW,AX:AX,ALEN:ALEN,AREAS:
 let fxLast=-2;const fxSeen={};
 let w2Msg=0;
 function fxTick(dt){
+  if(NAREAS>36&&!S.w2seen&&speed()>=W2V){S.w2seen=1;toast('Das Siegel zu Welt 2 zerbricht! Das Weltentor ist offen.','good');flashScreen(0xff9aff,.6);beep(392,.6,'triangle',.1,1.5);setTimeout(()=>beep(587,.8,'triangle',.1,1.5),250);save();}
   if(NAREAS>36&&speed()<W2V&&P.x>AX[36]-.3){P.x=AX[36]-.3;if(P.vx>0)P.vx=0;if(performance.now()-w2Msg>3500){w2Msg=performance.now();toast('Das Tor zu Welt 2 bleibt zu: du brauchst Tempo ⚡ 15M (du hast '+fmtV(speed()).slice(2)+')','bad');}}
   if(mySlot>=0&&plots[mySlot])applyPlot(mySlot,myPlot());
   const ai=areaIdx(P.x);
