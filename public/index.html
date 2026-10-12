@@ -591,7 +591,7 @@ const fmtPct=p=>(p>=10?String(Math.round(p)):p>=1?p.toFixed(1).replace('.',','):
 
 /* ---------- Welt-Hilfen ---------- */
 const areaIdx=x=>{if(x<0)return -1;for(let i=NAREAS-1;i>0;i--)if(x>=AX[i])return i;return 0;};
-const maxEggs=a=>a>=36?9:Math.round(MAXE*ALEN[a]/60);
+const maxEggs=a=>a>=36?Math.round(ALEN[a]/130):Math.round(MAXE*ALEN[a]/60);
 function tierWeights(a){
   const w=new Array(NR).fill(0),c=a*.95-1+(a>=35?.8:0);
   for(let i=0;i<NR;i++){const d=i-c;w[i]=d<=0?Math.exp(-(d*d)/(2*2.6*2.6)):Math.pow(.22,d);}
@@ -1692,7 +1692,7 @@ let mySlot=0;
 const spawnOf=s=>slotW(s,7,0);
 function spawnEgg(a){
   const r=rollRarity(a);
-  const lo=a>=36?Math.max(AX[a]+SAFE2+25,P.x-350):AX[a]+6,hi=a>=36?Math.min(AX[a]+ALEN[a]-20,Math.max(P.x,AX[a]+SAFE2+25)+500):AX[a]+ALEN[a]-6;
+  const lo=a>=36?AX[a]+SAFE2+25:AX[a]+6,hi=a>=36?AX[a]+ALEN[a]-20:AX[a]+ALEN[a]-6;
   const x=rand(lo,Math.max(lo+1,hi)),z=rand(-HW+2,HW-2);
   const g=new THREE.Group();g.position.set(x,0,z);g.visible=false;
   const rg=new THREE.Mesh(ringGeo,ringMat[r]);rg.rotation.x=-Math.PI/2;rg.position.y=.06;g.add(rg);
@@ -4806,8 +4806,8 @@ let lastEA=-9;
 function updateEggs(dt){
   {const ca=areaIdx(P.x);if(ca!==lastEA){lastEA=ca;if(ca>=36)spawnT[ca]=0;}}
   for(let a=0;a<NAREAS;a++){spawnT[a]-=dt;if(spawnT[a]<=0){if(a<36){if(eggCount[a]<maxEggs(a))spawnEgg(a);spawnT[a]=2.5;}
-    else{const cur=a===areaIdx(P.x);spawnT[a]=cur?.35:3;if(cur)for(let q=0;q<3&&eggCount[a]<maxEggs(a);q++)spawnEgg(a);}}}
-  for(let i=eggs.length-1;i>=0;i--){const e=eggs[i];if(e.a>=36&&Math.abs(e.x-P.x)>900)removeEgg(i);}
+    else{const cur=a===areaIdx(P.x);spawnT[a]=cur?.35:3;if(cur)for(let q=0;q<8&&eggCount[a]<maxEggs(a);q++)spawnEgg(a);}}}
+  for(let i=eggs.length-1;i>=0;i--){const e=eggs[i];}
   if(MERCH_ON&&!S.merch&&areaIdx(P.x)===39&&Math.abs(P.x-MX)<400&&!carried.some(c=>c.merch)&&!eggs.some(e=>e.merch))spawnMerchant();
   nearEgg=-1;let bd=2.7;const curA=areaIdx(P.x);
   for(let i=0;i<eggs.length;i++){
