@@ -569,12 +569,12 @@ if(!S.ver||S.ver<3){
 S.ver=5;
 let noSave=false;function save(){if(noSave)return;S.last=Date.now();try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));}catch(e){}}
 const speed=()=>8+1.5*S.speedLv, cap=()=>1+S.carryLv, slots=()=>3+S.slotLv;
-const COST={speed:()=>Math.floor(250*Math.pow(1.22,S.speedLv)),carry:()=>Math.floor(1000*Math.pow(3.2,S.carryLv)),slot:()=>Math.floor(10000*Math.pow(4.5,S.slotLv)),boost:()=>BOOSTC[Math.min(S.boost|0,6)]};
-const MAXLV={speed:Math.max(200,Math.ceil((AREAS[AREAS.length-1].v-8)/1.5)+12),carry:13,slot:11,boost:7};
+const COST={speed:()=>Math.floor(250*Math.pow(1.22,S.speedLv)),carry:()=>Math.floor(1000*Math.pow(3.2,S.carryLv)),slot:()=>Math.floor(10000*Math.pow(4.5,S.slotLv)),boost:()=>BOOSTC[Math.min(S.boost|0,9)]};
+const MAXLV={speed:Math.max(200,Math.ceil((AREAS[AREAS.length-1].v-8)/1.5)+12),carry:13,slot:11,boost:10};
 let normSpeed=false;try{normSpeed=localStorage.getItem('mh-norm')==='1';}catch(_){}
 const speedEff=()=>normSpeed?Math.min(8,speed()):speed();
 function toggleNorm(){normSpeed=!normSpeed;try{localStorage.setItem('mh-norm',normSpeed?'1':'0');}catch(_){}toast(normSpeed?'Tempo: Normal ('+fmtV(8)+')':'Tempo: Voll ('+fmtV(speed())+')');}
-const BOOSTF=[1,1.1,1.3,1.75,2.5,3.5,5,7],BOOSTC=[1e15,1e16,1e17,1e18,1e19,1e20,1e21];
+const BOOSTF=[1,1.1,1.3,1.75,2.5,3.5,5,7,10,15,25],BOOSTC=[1e15,1e16,1e17,1e18,1e19,1e20,1e21,1e24,1e27,1e30];
 const hatchTime=r=>RAR[r].hatch/BOOSTF[S.boost|0];
 const MERCH_ON=NAREAS>39,MX=MERCH_ON?AX[39]+S.mx:-1e9,MZ=S.ms*(HW+30);
 const petOf=id=>S.pets.find(p=>p.id===id);
@@ -2008,7 +2008,7 @@ function readyPadNear(){
 }
 const LVK={speed:'speedLv',carry:'carryLv',slot:'slotLv',boost:'boost'};
 function upInfo(k){const lv=S[LVK[k]],mx=lv>=MAXLV[k],c=COST[k]();
-  const d=k==='boost'?'Brüten '+Math.round(BOOSTF[Math.min(lv,7)]*100)+'%'+(mx?'':' → '+Math.round(BOOSTF[lv+1]*100)+'%'):k==='speed'?fmtV(speed())+' → '+fmtV(speed()+1.5):k==='carry'?'Trägt '+cap()+' → '+(cap()+1)+' Eier':slots()+' → '+(slots()+1)+' Haustiere';
+  const d=k==='boost'?'Brüten '+Math.round(BOOSTF[Math.min(lv,10)]*100)+'%'+(mx?'':' → '+Math.round(BOOSTF[lv+1]*100)+'%'):k==='speed'?fmtV(speed())+' → '+fmtV(speed()+1.5):k==='carry'?'Trägt '+cap()+' → '+(cap()+1)+' Eier':slots()+' → '+(slots()+1)+' Haustiere';
   return{lv:lv,mx:mx,c:c,d:d,ok:!mx&&S.money>=c};}
 const UPN={speed:'Lauftempo',carry:'Ei-Tasche',slot:'Haustier-Plätze',boost:'Brut-Beschleuniger'};
 function nearUse(){
