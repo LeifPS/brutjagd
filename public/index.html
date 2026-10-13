@@ -428,7 +428,7 @@ AD7[41]={
     rule:'Singularität: Der Sog hält dich zurück, und die Leere wird gieriger mit jedem Ei, das du trägst: Pro Ei wird der Herold 9 % schneller. Wer zu viel trägt, wird verschlungen.',
     ruleShort:'Sog · Beute-Gier',
     mob:{name:'Leerenherold',kind:'custom',id:'voidherald',col:'#1a0a28',eye:0xff5ad0,s:7.8}},
-  tier:{name:'Singulär',col:0xff5ad0,desc:'Schwarzes Ei, dessen Oberfläche das Licht um sich herum verschluckt, ein rosa Ring kreist um den Kern'},
+  tier:{name:'Ereignishorizont',col:0xff5ad0,desc:'Schwarzes Ei, dessen Oberfläche das Licht um sich herum verschluckt, ein rosa Ring kreist um den Kern'},
   pets:[
     {name:'Schwarzlochkatze',col:'#1a0a28',desc:'Ein winziger Ereignishorizont schwebt vor ihrer Brust'},
     {name:'Akkretionsfalke',col:'#ff5ad0',desc:'Eine glühende Staubscheibe umkreist ihn'},
@@ -2149,9 +2149,10 @@ function celebrate(){
   $('win').hidden=false;beep(523,.3,'triangle',.1,1.5);setTimeout(()=>beep(784,.5,'triangle',.1,1.4),250);
 }
 const VARN=['','Glanz','Regenbogen','Leere','Glitch','Prisma'],VARM=[1,2,5,15,40,100];
+/* Mutations-Chancen: für alle Eier gleich (nicht mehr von der Seltenheit abhängig) */
+const VARP=[.00025,.001,.005,.02,.08]/* Prisma,Glitch,Leere,Regenbogen,Glanz je Einzelchance (Reihenfolge s. rollVariant) */;
 function rollVariant(r){
-  const x=Math.random();if(x<.00008*(1+r*.25))return 5;if(x<.0004*(1+r*.2))return 4;const vd=.002*(1+r*.2),rb=.01*(1+r*.15)+vd,sh=.05+(r>=8?(r-7)*.01:0)+rb;
-  return x<vd?3:x<rb?2:x<sh?1:0;
+  const x=Math.random();let c=VARP[0];if(x<c)return 5;c+=VARP[1];if(x<c)return 4;c+=VARP[2];if(x<c)return 3;c+=VARP[3];if(x<c)return 2;c+=VARP[4];if(x<c)return 1;return 0;
 }
 function hatch(i){
   const pd=S.pads[i],r=pd.r;S.pads[i]=null;netDirty.pd=1;
