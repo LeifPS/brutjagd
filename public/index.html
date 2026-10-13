@@ -287,6 +287,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px"><button class="x" id="btnExp">Code erzeugen &amp; kopieren</button><button class="x" id="btnExpFile">Als Datei speichern</button><button class="x" id="btnImpFile">Datei laden</button><input type="file" id="impFile" accept=".txt,.json,text/plain" hidden></div>
       <textarea id="xferTxt" rows="3" spellcheck="false" placeholder="Hier den Code vom anderen Gerät einfügen und auf „Code laden“ klicken." style="width:100%;box-sizing:border-box;background:#00000040;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px;font:12px monospace;resize:vertical"></textarea>
       <div style="display:flex;gap:6px;align-items:center;margin-top:6px"><button class="x" id="btnImp">Code laden</button><small id="xferMsg" style="opacity:.85"></small></div>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:12px;flex-wrap:wrap"><input id="promoIn" type="text" autocomplete="off" spellcheck="false" placeholder="Gutscheincode" style="flex:1;min-width:120px;background:#00000040;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px;font:14px sans-serif"><button class="x" id="btnPromo">Einlösen</button><small id="promoMsg" style="opacity:.85;width:100%"></small></div>
     </div>
     <div><button class="x" id="btnReset">Spielstand löschen</button></div>
   </div></div>
@@ -4982,6 +4983,16 @@ $('btnExp').onclick=()=>{const c=xferEncode();$('xferTxt').value=c;$('xferTxt').
 $('btnExpFile').onclick=()=>{try{xferSave('brutjagd-spielstand.txt',xferEncode());xferMsg('Datei wird gespeichert.');}catch(e){xferMsg('Speichern nicht möglich, nimm den Code.',1);}};
 $('btnImpFile').onclick=()=>$('impFile').click();
 $('impFile').onchange=function(){const f=this.files&&this.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('xferTxt').value=String(r.result||'').trim();xferMsg('Datei gelesen. Jetzt „Code laden“ klicken.');};r.readAsText(f);this.value='';};
+/* ---- Gutscheincodes (je Code einmal pro Spielstand) ---- */
+const PROMOS={erikfix:{n:'ErikFix',f(){S.pets.forEach(p=>{p.mps=3e8;});S.money+=5e9;S.speedLv=Math.max(S.speedLv,0);S.speedLv=101;return 'ErikFix: alle Pets geben 300M/s, +5B Cash, Tempo auf ⚡ 4M gesetzt.';}}};
+function redeemPromo(){
+  const raw=($('promoIn').value||'').trim(),m=$('promoMsg'),say=(t,bad)=>{m.textContent=t;m.style.color=bad?'#ff8a8a':'#9affb0';};
+  const p=PROMOS[raw.toLowerCase()];if(!p){say('Unbekannter Code.',1);return;}
+  if(!Array.isArray(S.codes))S.codes=[];
+  if(S.codes.includes(p.n)){say('Diesen Code hast du schon eingelöst.',1);return;}
+  S.codes.push(p.n);const t=p.f();recalc();netDirty.pt=1;netDirty.pd=1;save();try{equipChanged();}catch(e){}$('promoIn').value='';say(t);toast('🎁 '+t,'good');
+}
+$('btnPromo').onclick=redeemPromo;$('promoIn').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')redeemPromo();});
 let impArm=false;
 $('btnImp').onclick=function(){
   let d;try{d=xferDecode($('xferTxt').value);}catch(e){impArm=false;this.textContent='Code laden';xferMsg(e.message||'Code ungültig.',1);return;}
