@@ -564,7 +564,7 @@ if(S.dex.some(d=>!d))S.won=false;
 S.pets.forEach(p=>{if(p.v===undefined)p.v=p.shiny?1:0;});
 while(!S.eggFound||S.eggFound.length<NR){S.eggFound=S.eggFound||[];S.eggFound.push(0);}
 S.pets.forEach(p=>{delete p.ab;});
-{const L=(typeof ALEN!=='undefined'&&ALEN[39])||3000;if(!S.mx||S.mx<600||S.mx>L-600){S.mx=Math.round(600+Math.random()*(L-1200));}}if(!S.ms){S.ms=Math.random()<.5?-1:1;}S.boost=S.boost|0;S.merch=S.merch|0;{const L=(typeof ALEN!=='undefined'&&ALEN[35])||165,kmin=Math.ceil((L-70-14.5)/15),kmax=Math.floor((L-25-14.5)/15);if(!S.nxo||(S.nxo-14.5)%15!==0||S.nxo<14.5+15*kmin||S.nxo>14.5+15*kmax)S.nxo=14.5+15*(kmin+Math.floor(Math.random()*(kmax-kmin+1)));if(S.nsd!==1&&S.nsd!==-1)S.nsd=Math.random()<.5?-1:1;}S.plv=S.plv|0;S.padLv=S.padLv|0;S.pmet=S.pmet|0;if(!Array.isArray(S.pidx))S.pidx=[];while(S.pidx.length<32)S.pidx.push(0);if(!Array.isArray(S.pegg))S.pegg=[0,0,0,0];
+{const L=(typeof ALEN!=='undefined'&&ALEN[39])||3000;if(!S.mx||S.mx<600||S.mx>L-600){S.mx=Math.round(600+Math.random()*(L-1200));}}if(!S.ms){S.ms=Math.random()<.5?-1:1;}S.boost=S.boost|0;S.merch=S.merch|0;{const L=(typeof ALEN!=='undefined'&&ALEN[35])||165,kmin=Math.ceil((L-70-14.5)/15),kmax=Math.floor((L-25-14.5)/15);if(!S.nxo||(S.nxo-14.5)%15!==0||S.nxo<14.5+15*kmin||S.nxo>14.5+15*kmax)S.nxo=14.5+15*(kmin+Math.floor(Math.random()*(kmax-kmin+1)));if(S.nsd!==1&&S.nsd!==-1)S.nsd=Math.random()<.5?-1:1;}S.plv=S.plv|0;S.padLv=S.padLv|0;S.pmet=S.pmet|0;if(!Array.isArray(S.pidx))S.pidx=[];while(S.pidx.length<32)S.pidx.push(0);if(!Array.isArray(S.pegg))S.pegg=[0,0,0,0];{const mo=[29.5,44.5,59.5];if(!mo.includes(S.mxo))S.mxo=mo[Math.floor(Math.random()*3)];if(S.msd!==1&&S.msd!==-1)S.msd=Math.random()<.5?-1:1;S.mq=S.mq|0;S.mmet=S.mmet|0;if(!Array.isArray(S.mg))S.mg=[0,0];while(S.mg.length<2)S.mg.push(0);if(!Array.isArray(S.tal))S.tal=[];if(typeof S.talEq!=='string')S.talEq='';}
 if(!S.ver||S.ver<3){
   const OLD=t=>t<8?[1.5,6,25,110,600,3500,20000,120000][t]:120000*Math.pow(3.2,t-7);
   S.pets.forEach(p=>{p.mps=Math.round(p.mps/OLD(p.r)*RAR[p.r].mps*10)/10;});
@@ -732,6 +732,7 @@ function buildDeco(a){
   for(let i=0;i<n;i++){
     const s=rand(.6,1.7),side=Math.random()<.5?-1:1;
     const pos=new THREE.Vector3(x0+rand(3,LEN-3),s*(d.t==='gear'?.2:.7),side*rand(HW-3.2,HW-.9));
+    if(a===13&&MOR_ON&&Math.sign(pos.z)===MRS&&Math.abs(pos.x-MRX)<5.5)pos.z=-pos.z;
     e.set(rand(-.2,.2),rand(0,6.28),rand(-.2,.2));q.setFromEuler(e);
     m.compose(pos,q,new THREE.Vector3(s,s*rand(.8,1.6),s));im.setMatrixAt(i,m);
   }
@@ -791,8 +792,9 @@ function buildFlavor(a){
       (g,u)=>{const tr=new THREE.Mesh(new THREE.CylinderGeometry(.6*u,.9*u,7*u,6),bm);tr.position.y=3.5*u;g.add(tr);for(let i=0;i<6;i++){const an=i/6*6.283,l=new THREE.Mesh(new THREE.SphereGeometry(.55*u,8,6),gm);l.position.set(Math.cos(an)*3.4*u,7.5*u+(i%2)*1.5*u,Math.sin(an)*3.4*u);g.add(l);}const cr=new THREE.Mesh(new THREE.SphereGeometry(3.4*u,10,8),bm);cr.position.y=8*u;cr.scale.y=.6;g.add(cr);return cr;}];
     const nL=1+(a>=10?1:0)+(a>=20?1:0),pick=(a*11+5)%arch.length,spin=[];
     for(let i=0;i<nL;i++){
-      const g=new THREE.Group(),u=1.7+q*1.6,ty=arch[(pick+i*3)%arch.length](g,u),sd=(i+a)%2?-1:1;
-      g.position.set(x0+LEN*(.22+.28*i+R()*.12),0,sd*(HW+11+R()*9));g.rotation.y=R()*6.28;scene.add(g);spin.push(ty);
+      const g=new THREE.Group(),u=1.7+q*1.6,ty=arch[(pick+i*3)%arch.length](g,u);let sd=(i+a)%2?-1:1;
+      const gx=x0+LEN*(.22+.28*i+R()*.12);if(a===13&&typeof MOR_ON!=='undefined'&&MOR_ON&&sd===MRS&&Math.abs(gx-MRX)<16)sd=-sd;
+      g.position.set(gx,0,sd*(HW+11+R()*9));g.rotation.y=R()*6.28;scene.add(g);spin.push(ty);
     }
     envList.push({cx:x0+LEN/2,half:LEN/2,u:{upd(t){for(let i=0;i<spin.length;i++){spin[i].rotation.y=t*(.3+i*.15);}}}});
   }
@@ -1030,7 +1032,7 @@ function buildHub(x,A,first){
 function buildWorld(){
   buildHall();initPlotPads();initShops();initSigns();if(NAREAS>36)buildLobbyPortals();
   for(let i=0;i<NAREAS;i++){
-    const A=AREAS[i];buildSection(AX[i],ALEN[i],A,i===39?[{x:MX,w:8,s:S.ms}]:i===35&&NPC_ON?[{x:NPX,w:8,s:NPS,nop:true}]:null);buildDeco(i);if(i===39)buildNiche(MX,S.ms);if(i===36&&NPC_ON)buildNpcNiche(A);
+    const A=AREAS[i];buildSection(AX[i],ALEN[i],A,i===39?[{x:MX,w:8,s:S.ms}]:i===35&&NPC_ON?[{x:NPX,w:8,s:NPS,nop:true}]:i===13&&MOR_ON?[{x:MRX,w:8,s:MRS,nop:true}]:null);buildDeco(i);if(i===13&&MOR_ON)buildMorNiche(A);if(i===39)buildNiche(MX,S.ms);if(i===36&&NPC_ON)buildNpcNiche(A);
     if(i===36)buildHub(AX[i],A,true);
     if(i>0&&i!==36)buildGate(AX[i],A,[['GEBIET '+(i+1),34,'#ffffff'],[A.name,56,hex6(A.glow)],['Glück ×'+fmtD(A.luck)+' · '+A.mob.name,28,'#ffd7b0']]);
     else if(i===36)buildGate(AX[i],{wall:0x3a1a5a,glow:0xff9aff},[['WELT 2',40,'#ffffff'],[A.name,56,hex6(A.glow)],['Der lange Gang · '+A.mob.name,28,'#ffd7b0']]);
@@ -1764,10 +1766,10 @@ function removeEgg(i){const e=eggs[i];scene.remove(e.g);e.dot.remove();if(!e.mer
 
 /* ---------- Spieler-Modell (auch für Mitspieler) ---------- */
 const COLS=['#ff4a3d','#3b7bff','#35c46a','#ffb02e','#b05cff','#ff7ac8','#26d4d4','#f2f2f2','#222233','#8a5a2b'];
-const HATS=['Keine','Zylinder','Krone','Heiligenschein','Hörner','Prismenkrone','Messhut','Aurorakrone','Weltenkrone'],HATN=[0,5,15,30,50,80,0,0,0];
-const CAPES=['Keiner','Rot','Gold','Regenbogen','Leere','Glitch','Kartenumhang','Sternenkarte','Goldmantel'];
-function capeOk(i){if(i<=0)return true;if(i>=6)return (S.plv|0)>=i-5;const pv=v=>S.pets.some(p=>p.v>=v);return i===1?S.dex.filter(Boolean).length>=10:i===2?S.pets.some(p=>p.v===1):i===3?S.pets.some(p=>p.v===2):i===4?S.pets.some(p=>p.v===3):S.pets.some(p=>p.v>=4);}
-function capeHint(i){return['','10 Haustiere im Index','ein Glanz-Haustier','ein Regenbogen-Haustier','ein Leere-Haustier','ein Glitch- oder Prisma-Haustier','Plot-Vermessung 1','Plot-Vermessung 2','Plot-Vermessung 3'][i];}
+const HATS=['Keine','Zylinder','Krone','Heiligenschein','Hörner','Prismenkrone','Messhut','Aurorakrone','Weltenkrone','Morchelhut'],HATN=[0,5,15,30,50,80,0,0,0,0];
+const CAPES=['Keiner','Rot','Gold','Regenbogen','Leere','Glitch','Kartenumhang','Sternenkarte','Goldmantel','Sporenmantel'];
+function capeOk(i){if(i<=0)return true;if(i===9)return (S.mq|0)>=4;if(i>=6)return (S.plv|0)>=i-5;const pv=v=>S.pets.some(p=>p.v>=v);return i===1?S.dex.filter(Boolean).length>=10:i===2?S.pets.some(p=>p.v===1):i===3?S.pets.some(p=>p.v===2):i===4?S.pets.some(p=>p.v===3):S.pets.some(p=>p.v>=4);}
+function capeHint(i){return['','10 Haustiere im Index','ein Glanz-Haustier','ein Regenbogen-Haustier','ein Leere-Haustier','ein Glitch- oder Prisma-Haustier','Plot-Vermessung 1','Plot-Vermessung 2','Plot-Vermessung 3','Morchels Quest abschließen'][i];}
 function applyCos(o,c){
   c=Array.isArray(c)?c:[0,1,0,0];const ci=x=>COLS[(x|0)%COLS.length]||COLS[0];
   o.capM.color.set(ci(c[0]));o.shirtM.color.set(ci(c[1]));
@@ -1783,9 +1785,10 @@ function applyCos(o,c){
   else if(h===6){const tl=M('#14303f');add(GCYL,tl,0,2.28,0,.95,.08,.95);add(GCONE,tl,0,2.62,0,.62,.8,.62);add(GCYL,M('#c8963c',0x2a1a00),0,2.34,0,.56,.1,.56);add(GSPH,M('#7fe8ff',0x40c8ff),.3,2.36,.34,.1,.1,.1);}
   else if(h===7){const m=M('#7fffd8',0x30ffb0);add(new THREE.TorusGeometry(.55,.05,8,24),m,0,2.6,0,1,1,1,Math.PI/2);for(let i=0;i<4;i++){const a=i/4*6.283;const o2=add(new THREE.OctahedronGeometry(1),M(i%2?'#ff7ae0':'#7fffd8',i%2?0xff30c0:0x30ffb0),Math.cos(a)*.55,2.7+(i%2)*.15,Math.sin(a)*.55,.1,.3,.1);}add(GSPH,M('#ffffff',0xffffff),0,2.95,0,.14,.14,.14);}
   else if(h===8){const gd=M('#ffd24a',0x6a4400);add(GCYL,gd,0,2.3,0,.62,.28,.62);for(let i=0;i<7;i++){const a=i/7*6.283;add(GCONE,gd,Math.cos(a)*.5,2.7,Math.sin(a)*.5,.16,.55,.16);add(GSPH,M('#ff6aa8',0xff3080),Math.cos(a)*.5,3.0,Math.sin(a)*.5,.08,.08,.08);}add(GSPH,M('#9affff',0x40e0ff),0,2.8,0,.26,.26,.26);}
-  if(cp>0){const col=['','#c01830','#ffcf3a','#ffffff','#160a2a','#0affd0','#e8dcc0','#0d1f4a','#ffe9a0'][cp],em=[0,0x300008,0x553300,0x303030,0x6a2aff,0xff20c0,0x201808,0x1a40d0,0x806010][cp];
+  else if(h===9){const cap=M('#b8522a',0x2a0c00),sp=M('#f4ead0');add(GSPH,cap,0,2.42,0,.78,.46,.78);add(GCYL,sp,0,2.28,0,.34,.2,.34);for(let i=0;i<6;i++){const a=i/6*6.283;add(GSPH,sp,Math.cos(a)*.42,2.52+(i%2)*.06,Math.sin(a)*.42,.1,.08,.1);}add(GSPH,M('#8affb0',0x30ff80),0,2.86,0,.12,.12,.12);}
+  if(cp>0){const col=['','#c01830','#ffcf3a','#ffffff','#160a2a','#0affd0','#e8dcc0','#0d1f4a','#ffe9a0','#3f6b34'][cp],em=[0,0x300008,0x553300,0x303030,0x6a2aff,0xff20c0,0x201808,0x1a40d0,0x806010,0x0a3a18][cp];
     const mt=M(col,em),m=add(GBOX,mt,0,1.0,-.7,.95,1.5,.06);m.rotation.x=.12;
-    if(cp>=3)m.onBeforeRender=()=>{const t=performance.now()/(cp===5?300:cp>=6?900:1600);if(cp===3){mt.color.setHSL(t%1,.8,.6);mt.emissive.setHSL(t%1,1,.3);}else if(cp===5){mt.emissive.setHSL(.83+.12*Math.sin(t*3),1,.5*(Math.sin(t*7)>.5?1:.4));}else if(cp===7){mt.emissive.setHSL(.6+.05*Math.sin(t*2),1,.22+.1*Math.sin(t*5));}else if(cp===8){mt.emissive.setHSL(.12,.9,.3+.15*Math.sin(t*4));}};}
+    if(cp>=3)m.onBeforeRender=()=>{const t=performance.now()/(cp===5?300:cp>=6?900:1600);if(cp===3){mt.color.setHSL(t%1,.8,.6);mt.emissive.setHSL(t%1,1,.3);}else if(cp===5){mt.emissive.setHSL(.83+.12*Math.sin(t*3),1,.5*(Math.sin(t*7)>.5?1:.4));}else if(cp===7){mt.emissive.setHSL(.6+.05*Math.sin(t*2),1,.22+.1*Math.sin(t*5));}else if(cp===8){mt.emissive.setHSL(.12,.9,.3+.15*Math.sin(t*4));}else if(cp===9){mt.emissive.setHSL(.38,.9,.14+.1*Math.sin(t*3));}};}
 }
 function makePlayerObj(capCol,shirt){
   const o={g:new THREE.Group(),arms:[],legs:[],walk:0};
@@ -2138,7 +2141,7 @@ function die(){
   const sp=spawnOf(mySlot);P.x=sp.x;P.z=sp.z;P.vx=P.vz=0;
   toast('Der Boss hat dich erwischt. Deine Eier sind weg.','bad');beep(160,.7,'sawtooth',.1,.3);
 }
-function rarestStash(){for(let r=NR-1;r>=0;r--)if(S.stash[r]-(typeof npcReserve==='function'?npcReserve(r):0)>0)return r;return -1;}
+function rarestStash(){for(let r=NR-1;r>=0;r--)if(S.stash[r]-(typeof eggReserve==='function'?eggReserve(r):0)>0)return r;return -1;}
 function stashTotal(){return S.stash.reduce((a,b)=>a+b,0);}
 function celebrate(){
   const cols=[0xffc93c,0xff4a8d,0x3dffe8,0x5ee08a,0xb46bff,0xffffff];let n=0;
@@ -4953,6 +4956,12 @@ function dlgInit(){
   const el=document.createElement('div');el.id='dlg';el.innerHTML='<div class="box"><canvas width="184" height="184"></canvas><div style="flex:1;min-width:0"><div class="nm"></div><div class="tx"></div><div class="ch"></div><div class="hn"></div></div></div>';
   document.body.appendChild(el);dlg.el=el;dlg.nm=el.querySelector('.nm');dlg.tx=el.querySelector('.tx');dlg.ch=el.querySelector('.ch');dlg.hint=el.querySelector('.hn');dlg.cvs=el.querySelector('canvas');
   const c=dlg.cvs.getContext('2d');c.scale(2,2);
+  dlg.c2=c;dlgPortrait(NPC_NAME);
+  el.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;e.preventDefault();dlgAdvance();});
+}
+function dlgPortrait(nm){
+  const c=dlg.c2;if(!c)return;c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,92,92);dlg.who=nm;
+  if(typeof MOR_NAME!=='undefined'&&nm===MOR_NAME)return morPortrait(c);
   const g=c.createRadialGradient(46,46,6,46,46,60);g.addColorStop(0,'#1d4a63');g.addColorStop(1,'#0a1620');c.fillStyle=g;c.fillRect(0,0,92,92);
   c.fillStyle='#244a63';c.beginPath();c.ellipse(46,96,40,28,0,0,6.3);c.fill();
   c.fillStyle='#f2f0ea';c.beginPath();c.moveTo(26,52);c.quadraticCurveTo(46,98,66,52);c.closePath();c.fill();
@@ -4961,10 +4970,9 @@ function dlgInit(){
   c.strokeStyle='#c8963c';c.lineWidth=3;for(const sx of[-1,1]){c.beginPath();c.arc(46+sx*9,44,8,0,6.3);c.stroke();c.fillStyle='rgba(127,232,255,.85)';c.fill();}
   c.fillStyle='#14303f';c.beginPath();c.ellipse(46,32,36,7,0,0,6.3);c.fill();c.beginPath();c.moveTo(30,32);c.lineTo(46,2);c.lineTo(62,32);c.closePath();c.fill();
   c.fillStyle='#c8963c';c.fillRect(31,28,30,5);c.fillStyle='#7fe8ff';c.beginPath();c.arc(54,30,2.5,0,6.3);c.fill();
-  el.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;e.preventDefault();dlgAdvance();});
 }
 function dlgSay(pages,choices,name){
-  dlgInit();dlgOpen=true;dlg.pages=Array.isArray(pages)?pages:[pages];dlg.pi=0;dlg.choices=choices||[{t:'Weiter',fn:dlgClose}];dlg.nm.textContent=name||NPC_NAME;
+  dlgInit();if(dlg.who!==(name||NPC_NAME))dlgPortrait(name||NPC_NAME);dlgOpen=true;dlg.pages=Array.isArray(pages)?pages:[pages];dlg.pi=0;dlg.choices=choices||[{t:'Weiter',fn:dlgClose}];dlg.nm.textContent=name||NPC_NAME;
   dlg.el.classList.add('on');keys.w=keys.a=keys.s=keys.d=keys.e=false;joy.x=joy.y=0;dlgPage();
 }
 function dlgPage(){dlg.full=dlg.pages[dlg.pi];dlg.pos=0;dlg.typing=true;dlg.ch.innerHTML='';dlg.hint.textContent='';dlg.tx.textContent='';}
@@ -4992,7 +5000,7 @@ window.addEventListener('keydown',e=>{
   if(ftOpenFlag){if(e.key==='Escape'||e.key==='e'||e.key==='E'){e.stopImmediatePropagation();e.preventDefault();ftClose();}return;}
   if(dlgOpen){e.stopImmediatePropagation();e.preventDefault();const k=e.key;
     if(k===' '||k==='Enter'||k==='e'||k==='E')dlgAdvance();else if(k==='Escape')dlgClose();else if(/^[1-9]$/.test(k))dlgPick(+k-1);return;}
-  if((e.key==='e'||e.key==='E')&&started&&npcZone()){e.stopImmediatePropagation();npcTalk();}
+  if((e.key==='e'||e.key==='E')&&started){if(npcZone()){e.stopImmediatePropagation();npcTalk();}else if(morZone()){e.stopImmediatePropagation();morTalk();}}
 },true);
 
 /* ---------- Quest-Logik ---------- */
@@ -5124,6 +5132,220 @@ function npcTick(dtr,time){
 W2.noObj=(x,z)=>(NPC_ON&&Math.abs(x-NPX)<7.5&&z*NPS>HW-1&&z*NPS<HW+42)||(MERCH_ON&&Math.abs(x-MX)<7.5&&z*S.ms>HW-1&&z*S.ms<HW+42);
 W2.carveX=x0v=>{const t=x=>{const m=((x%960)+960)%960;return m<480?m:960-m;};if(NPC_ON&&x0v===AX[35])return t(NPX);if(MERCH_ON&&x0v===AX[39])return t(MX);return null;};
 
+/* ===== Talismane + Morchel die Pilzsammlerin (Nebengang in Gebiet 14, Pilzwald) ===== */
+const MOR_ON=NAREAS>13,MOR_NAME='Morchel die Pilzsammlerin';
+const MRX=MOR_ON?AX[13]+S.mxo:-1e9,MRS=S.msd||1,MRL=28,MRZ=MRS*(HW+20);
+const MOR_NEED=[100,50];                 /* Gewöhnlich, Ungewöhnlich */
+let morIn=false,morAnim=null,morLab=null;
+
+/* ---------- Talismane ---------- */
+const TALIS={spore:{n:'Morchels Sporenlocke',ic:'🍄',d:'Trägst du schon ein Ei und läufst, sammelst du alle Eier in doppelter Reichweite automatisch mit auf.'}};
+function talEquip(id){if(id&&!S.tal.includes(id))return;S.talEq=id||'';save();renderFig();toast(id?TALIS[id].ic+' Talisman angelegt: '+TALIS[id].n:'Talisman abgelegt','good');}
+function giveTal(id){if(!S.tal.includes(id))S.tal.push(id);if(!S.talEq)S.talEq=id;save();}
+function talRow(row){
+  if(!S.tal.length)return '';
+  const eq=S.talEq,btn=(id,t)=>'<button class="btn" data-tal="'+id+'"'+(eq===id?' style="outline:3px solid var(--gold)"':'')+'>'+t+'</button>';
+  let h=row('Talisman <small style="opacity:.6">(einer gleichzeitig)</small>',btn('','Keiner')+S.tal.map(id=>btn(id,TALIS[id].ic+' '+TALIS[id].n)).join(''));
+  if(eq&&TALIS[eq])h+='<div style="font-size:13px;opacity:.8;max-width:560px">'+TALIS[eq].d+'</div>';
+  return h;
+}
+let talCd=0;
+function talTick(dt){
+  if(S.talEq!=='spore'||!started||dlgOpen)return;
+  talCd-=dt;if(talCd>0)return;
+  if(!carried.length||P.spd<1||carried.length>=cap())return;
+  const R=5.4,curA=areaIdx(P.x);
+  for(let i=eggs.length-1;i>=0;i--){
+    const e=eggs[i];if(e.merch||e.hidden||!e.built)continue;
+    if(e.a>=36&&e.a!==curA)continue;
+    if(Math.hypot(P.x-e.x,P.z-e.z)<R){pickEgg(e,i);nearEgg=-1;talCd=.12;return;}
+  }
+}
+
+/* ---------- Welt: Nebengang mit Leuchtpilzen ---------- */
+function morPortrait(c){
+  const g=c.createRadialGradient(46,46,6,46,46,60);g.addColorStop(0,'#2a5a3a');g.addColorStop(1,'#0a1a10');c.fillStyle=g;c.fillRect(0,0,92,92);
+  c.fillStyle='#3a5a2a';c.beginPath();c.ellipse(46,96,40,28,0,0,6.3);c.fill();
+  c.fillStyle='#6a3a1e';for(const sx of[-1,1]){c.beginPath();c.ellipse(46+sx*24,60,6,22,sx*.2,0,6.3);c.fill();}
+  c.fillStyle='#f0cfa8';c.beginPath();c.arc(46,48,18,0,6.3);c.fill();
+  c.fillStyle='#4a2a14';c.beginPath();c.arc(46,44,19,3.4,6.0);c.fill();
+  c.fillStyle='#2a1a10';for(const sx of[-1,1]){c.beginPath();c.arc(46+sx*7,48,2.2,0,6.3);c.fill();}
+  c.fillStyle='#d0706a';c.beginPath();c.arc(39,54,3,0,6.3);c.arc(53,54,3,0,6.3);c.fill();
+  c.strokeStyle='#8a3a2a';c.lineWidth=1.6;c.beginPath();c.arc(46,54,5,.2,2.9);c.stroke();
+  c.fillStyle='#b8522a';c.beginPath();c.ellipse(46,32,38,22,0,Math.PI,0);c.lineTo(84,34);c.quadraticCurveTo(46,40,8,34);c.closePath();c.fill();
+  c.fillStyle='#f4ead0';for(const p of[[26,22,5],[44,13,6],[62,22,5],[36,30,3.5],[56,30,3.5]]){c.beginPath();c.arc(p[0],p[1],p[2],0,6.3);c.fill();}
+  c.fillStyle='rgba(140,255,180,.9)';c.beginPath();c.arc(72,40,2.4,0,6.3);c.fill();
+}
+function morTex(kind){
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+  if(kind==='floor'){x.fillStyle='#17281a';x.fillRect(0,0,256,256);let sd=3;const rn=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
+    for(let i=0;i<260;i++){x.fillStyle='rgba('+(40+rn()*40|0)+','+(80+rn()*70|0)+','+(40+rn()*30|0)+','+(.2+rn()*.25)+')';x.beginPath();x.arc(rn()*256,rn()*256,3+rn()*9,0,6.3);x.fill();}
+    for(let i=0;i<30;i++){x.fillStyle='rgba(180,255,200,.55)';x.beginPath();x.arc(rn()*256,rn()*256,1.2+rn()*1.5,0,6.3);x.fill();}}
+  else{x.clearRect(0,0,256,256);x.translate(128,128);
+    x.strokeStyle='#a8e0a0';x.lineWidth=3;for(const r of[118,90]){x.beginPath();x.arc(0,0,r,0,6.283);x.stroke();}
+    x.fillStyle='rgba(168,224,160,.9)';for(let i=0;i<8;i++){x.save();x.rotate(i/8*6.283);x.beginPath();x.ellipse(0,-64,20,28,0,0,6.3);x.fill();x.restore();}
+    x.fillStyle='rgba(244,234,208,.9)';x.beginPath();x.arc(0,0,22,0,6.3);x.fill();}
+  const t=new THREE.CanvasTexture(x.canvas);t.anisotropy=4;return t;
+}
+function buildMorNiche(A){
+  const s=MRS,x=MRX,L=MRL,w=8,z0=s*(HW+L/2),M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.85},o||{}));
+  const dm=M(0x16241a,{roughness:.95,emissive:0x040a05}),bark=M(0x5a3a22),cream=M(0xf4ead0),cap1=M(0xb8522a,{emissive:0x2a0c00});
+  const fl=new THREE.Mesh(GBOX,new THREE.MeshStandardMaterial({map:morTex('floor'),roughness:1}));fl.scale.set(w+2.4,.5,L);fl.position.set(x,-.2,z0);fl.receiveShadow=true;scene.add(fl);
+  for(const sx of[-1,1])addBox(1.2,6,L,x+sx*(w/2+.6),3,z0,dm,false);
+  addBox(w+2.4,.8,L,x,6.4,z0,dm,false);
+  const zb=s*(HW+L+.4);addBox(w+2.4,6.8,1.2,x,3.4,zb,dm,false);
+  /* Eingang: zwei Leuchtpilz-Pfosten */
+  const glowCols=[0x8affb0,0x7fe8ff,0xffb0f0];
+  const shroom=(px,pz,u,col,par)=>{const g=new THREE.Group();g.position.set(px,0,pz);
+    const st=new THREE.Mesh(GCYL,cream);st.scale.set(.28*u,1.6*u,.28*u);st.position.y=.8*u;g.add(st);
+    const cp=new THREE.Mesh(GSPH,new THREE.MeshBasicMaterial({color:col}));cp.scale.set(.85*u,.5*u,.85*u);cp.position.y=1.65*u;g.add(cp);
+    (par||scene).add(g);return g;};
+  for(const sx of[-1,1])shroom(x+sx*(w/2-.1),s*(HW+1.5),1.7,0x8affb0);
+  /* Leuchtpilze an den Seitenwänden */
+  const lights=[];
+  for(let i=0;i<9;i++)for(const sx of[-1,1]){const rz=s*(HW+3+i*2.9+(sx>0?1.2:0)),u=.55+((i*7+(sx>0?3:0))%5)*.14;
+    const g=shroom(x+sx*(w/2-.55),rz,u,glowCols[(i+(sx>0?1:0))%3]);lights.push(g);}
+  /* Trockengestell mit Pilzen */
+  for(const sx of[-1,1]){const rz=s*(HW+12),gx=x+sx*(w/2-.4);
+    for(const dz of[-3.2,3.2]){const po=new THREE.Mesh(GCYL,bark);po.scale.set(.14,3.6,.14);po.position.set(gx,1.8,rz+dz*s);scene.add(po);}
+    const rod=new THREE.Mesh(GCYL,bark);rod.scale.set(.1,6.8,.1);rod.rotation.x=Math.PI/2;rod.position.set(gx,3.4,rz);scene.add(rod);
+    for(let k=0;k<7;k++){const kz=rz+(k-3)*s*.95,gp=new THREE.Group();gp.position.set(gx,3.4,kz);
+      const th=new THREE.Mesh(GCYL,new THREE.MeshBasicMaterial({color:0xd8c8a0}));th.scale.set(.02,.9,.02);th.position.y=-.45;gp.add(th);
+      const m=new THREE.Mesh(GSPH,k%2?cap1:cream);m.scale.set(.3,.2,.3);m.position.y=-1.0;gp.add(m);scene.add(gp);}}
+  /* Sporenmutter: riesiger Leuchtpilz an der Rückwand */
+  {const g=new THREE.Group();g.position.set(x,0,zb-s*2.6);
+    const st=new THREE.Mesh(GCYL,cream);st.scale.set(1.5,4.6,1.5);st.position.y=2.3;g.add(st);
+    const cpm=new THREE.MeshBasicMaterial({color:0x8affb0}),cp=new THREE.Mesh(GSPH,cpm);cp.scale.set(3.6,1.7,3.6);cp.position.y=5.0;g.add(cp);
+    for(let i=0;i<9;i++){const a=i/9*6.283,sp=new THREE.Mesh(GSPH,new THREE.MeshBasicMaterial({color:0xeafff0}));sp.scale.set(.32,.14,.32);sp.position.set(Math.cos(a)*2.0,5.5+((i%3)*.15),Math.sin(a)*2.0);g.add(sp);}
+    scene.add(g);morAnim={mother:g,cp:cp};
+    const gl=new THREE.Sprite(new THREE.SpriteMaterial({map:gTex,color:0x7fffa8,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,opacity:.5}));gl.scale.set(14,14,1);gl.position.set(0,5,0);g.add(gl);morAnim.gl=gl;}
+  /* Runde auf dem Boden */
+  const rg=new THREE.Mesh(new THREE.PlaneGeometry(8,8),new THREE.MeshBasicMaterial({map:morTex('ring'),transparent:true,opacity:.7}));rg.rotation.x=-Math.PI/2;rg.position.set(x,.03,MRZ);scene.add(rg);
+  /* Die Figur */
+  const g=new THREE.Group();g.position.set(x,0,MRZ);g.rotation.y=s>0?Math.PI:0;scene.add(g);
+  const add=(geo,mt,px,py,pz,sx_,sy_,sz_,par)=>{const m=new THREE.Mesh(geo,mt);m.position.set(px,py,pz);if(sx_!==undefined)m.scale.set(sx_,sy_,sz_);m.castShadow=true;(par||g).add(m);return m;};
+  const dress=add(new THREE.ConeGeometry(1.05,2.8,14),M(0x3f6b34),0,1.4,0);
+  add(GCYL,M(0x7a4a28),0,1.6,0,.9,.18,.9);                       /* Gürtel */
+  add(GBOX,M(0xe8d8b0),0,1.1,.95,1.0,1.2,.1);                    /* Schürze */
+  add(GSPH,M(0x4a7a3a),0,2.65,0,.85,.5,.7);
+  add(GSPH,M(0xf0cfa8),0,3.3,0,.5,.5,.48);
+  for(const sx of[-1,1])add(GSPH,M(0x2a1a10),sx*.2,3.36,.42,.07,.09,.05);
+  for(const sx of[-1,1])add(GSPH,M(0xe08a80),sx*.3,3.2,.4,.1,.07,.04);
+  for(const sx of[-1,1]){const zp=add(GCYL,M(0x4a2a14),sx*.5,2.75,-.1,.14,1.2,.14);zp.rotation.z=sx*.12;add(GSPH,M(0x4a2a14),sx*.55,2.1,-.1,.18,.18,.18);}
+  /* Pilzhut */
+  const hat=new THREE.Group();hat.position.set(0,3.65,0);g.add(hat);
+  const hc=new THREE.Mesh(GSPH,M(0xb8522a,{emissive:0x2a0c00}));hc.scale.set(1.15,.62,1.15);hc.castShadow=true;hat.add(hc);
+  for(let i=0;i<7;i++){const a=i/7*6.283,r=.75+((i%2)*.2),sp=new THREE.Mesh(GSPH,cream);sp.scale.set(.18,.08,.18);sp.position.set(Math.cos(a)*r*.82,.25+(i%3)*.08,Math.sin(a)*r*.82);hat.add(sp);}
+  /* Korb auf dem Rücken */
+  const basket=add(new THREE.CylinderGeometry(.55,.4,.9,10),M(0x8a5a2a),0,2.0,-.85);
+  for(let k=0;k<4;k++)add(GSPH,k%2?cap1:cream,(k-1.5)*.26,2.55+(k%2)*.1,-.85,.22,.16,.22);
+  /* Arme: links Pilzkorb vorn, rechts Laternenstab */
+  const armL=add(GCYL,M(0x3f6b34),-.9,2.2,.35,.26,1.3,.26);armL.rotation.set(.9,0,.4);
+  const armR=add(GCYL,M(0x3f6b34),.95,2.3,.2,.26,1.4,.26);armR.rotation.set(.3,0,-.3);
+  add(GSPH,M(0xf0cfa8),-.7,1.7,.9,.2,.2,.2);add(GSPH,M(0xf0cfa8),1.2,1.75,.5,.2,.2,.2);
+  const bk=add(new THREE.CylinderGeometry(.5,.38,.5,10),M(0x8a5a2a),-.55,1.5,1.0);
+  add(GSPH,cream,-.65,1.8,1.0,.18,.14,.18);add(GSPH,cap1,-.4,1.82,1.05,.16,.12,.16);
+  add(GCYL,bark,1.35,2.5,.5,.09,5.0,.09);
+  const lamp=add(GSPH,new THREE.MeshBasicMaterial({color:0x9affb8}),1.35,5.1,.5,.34,.4,.34);
+  const gl2=new THREE.Sprite(new THREE.SpriteMaterial({map:gTex,color:0x8affb0,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,opacity:.55}));gl2.scale.set(5,5,1);gl2.position.set(1.35,5.1,.5);g.add(gl2);
+  /* Sporen */
+  const sps=[];for(let i=0;i<14;i++){const sp=new THREE.Mesh(GSPH,new THREE.MeshBasicMaterial({color:0xcaffd8,transparent:true,opacity:.8}));sp.scale.setScalar(.07);scene.add(sp);sps.push({m:sp,ph:Math.random()*6.3,x:x+(Math.random()-.5)*6,z:s*(HW+4+Math.random()*(L-8))});}
+  const lab=makeLabel(512,170,7.2,2.4);lab.position.set(x,7.2,MRZ);scene.add(lab);lab.userData.draw([{t:'MORCHEL',size:52,col:'#b8ffc8'},{t:'Die Pilzsammlerin',size:32,col:'#f4ead0'}]);morLab=lab;
+  Object.assign(morAnim,{g:g,hat:hat,dress:dress,gl2:gl2,lamp:lamp,sps:sps,lights:lights});
+}
+function morAnimate(dt,time){
+  const a=morAnim;if(!a||!a.g)return;
+  a.hat.rotation.z=Math.sin(time*1.3)*.05;a.hat.position.y=3.65+Math.sin(time*2)*.03;
+  a.dress.scale.y=1+Math.sin(time*1.5)*.015;a.gl2.material.opacity=.45+Math.sin(time*2.6)*.12;
+  a.gl.material.opacity=.42+Math.sin(time*1.7)*.1;a.cp.scale.y=1.7+Math.sin(time*1.7)*.06;
+  a.g.rotation.y=(MRS>0?Math.PI:0)+Math.sin(time*.45)*.1;
+  for(const q of a.sps){q.m.position.set(q.x+Math.sin(time*.6+q.ph)*.6,.5+((time*.35+q.ph)%1)*5.5,q.z+Math.cos(time*.5+q.ph)*.6);q.m.material.opacity=.8*Math.sin(((time*.35+q.ph)%1)*3.14159);}
+}
+
+/* ---------- Quest-Logik ---------- */
+const morZone=()=>MOR_ON&&Math.abs(P.x-MRX)<4.6&&P.z*MRS>HW+9&&P.z*MRS<HW+MRL;
+function morWant(r){
+  if((S.mq|0)!==1||!S.mmet)return 0;
+  if(r===0)return Math.max(0,MOR_NEED[0]-S.mg[0]);
+  if(r===1)return Math.max(0,MOR_NEED[1]-S.mg[1]);
+  return 0;
+}
+const morReserve=r=>MOR_ON?Math.min(S.stash[r]|0,morWant(r)):0;
+function eggReserve(r){return (typeof npcReserve==='function'?npcReserve(r):0)+morReserve(r);}
+function morGiveList(){const l=[];for(let r=0;r<2;r++){const n=Math.min(S.stash[r]|0,morWant(r));for(let k=0;k<n;k++)l.push(r);}return l;}
+const morEggsOk=()=>S.mg[0]>=MOR_NEED[0]&&S.mg[1]>=MOR_NEED[1];
+const morPetV=()=>(S.mq|0)===2?2:(S.mq|0)===3?1:0;                /* 2 = Regenbogen, 1 = Glanz */
+function morPetCand(){const v=morPetV();if(!v)return null;let b=null;for(const p of S.pets)if(p.sp===0&&p.v===v&&(!b||p.mps<b.mps))b=p;return b;}
+function morStatusPages(){
+  const q=S.mq|0;
+  if(q>=4)return ['Du hast alles getan, was ich verlangt habe, Läufer. Die Sporenmutter strahlt – und ich muss nicht mehr nachts im Wald schlafen.'];
+  if(q===1)return ['Erster Schritt – der Nährboden:\n• '+RAR[0].name+': '+S.mg[0]+' / '+MOR_NEED[0]+'\n• '+RAR[1].name+': '+S.mg[1]+' / '+MOR_NEED[1],'Bring die Eier erst ganz zurück in dein Lager. Von dort gibst du sie mir einfach ab – dann hängt dir kein Hüter am Rock.'];
+  if(q===2)return ['Zweiter Schritt – die Farben:\nEin Regenbogen-Schleimi. Nicht irgendeiner aus dem Bilderbuch, sondern deiner. Ich nehme den schwächsten, den du hast – der Rest bleibt bei dir.','Das Tierchen wird Teil der Sporenmutter. Es wird ihr gut gehen, versprochen.'];
+  return ['Dritter und letzter Schritt – das Licht:\nEin Glanz-Schleimi. Er soll der Sporenmutter den Weg leuchten, damit sie wieder wächst.','Auch hier nehme ich den schwächsten, den du hast.'];
+}
+function morDeliver(){
+  const got=morGiveList();if(!got.length)return false;
+  for(const r of got){S.stash[r]--;S.mg[r]++;}
+  save();beep(420,.18,'triangle',.08,1.4);setTimeout(()=>beep(640,.25,'triangle',.08,1.8),150);
+  burstFx(MRX,2.5,MRZ,0x8affb0,40,7,6,1);ring(MRX,.1,MRZ,0xf4ead0,5,.8);
+  const n0=got.filter(r=>r===0).length,n1=got.length-n0,pages=[];
+  pages.push(pick(['Oh, wie schön duftig! '+(n0?n0+'× '+RAR[0].name:'')+(n0&&n1?' und ':'')+(n1?n1+'× '+RAR[1].name:'')+'. Das gibt guten Boden.','Hmm, ja. '+got.length+' Eier. Genau so mag es die Sporenmutter: frisch und ein bisschen zerbeult.']));
+  if(morEggsOk()){S.mq=2;save();pages.push('Das war der letzte Löffel Nährboden. Hörst du das Knistern? Sie wacht auf!','Aber ein Boden allein macht noch keinen Wald. Sie braucht Farbe. Bring mir einen REGENBOGEN-SCHLEIMI. Ich kümmere mich gut um ihn.');}
+  else pages.push('Noch fehlen: '+[S.mg[0]<MOR_NEED[0]?(MOR_NEED[0]-S.mg[0])+'× '+RAR[0].name:'',S.mg[1]<MOR_NEED[1]?(MOR_NEED[1]-S.mg[1])+'× '+RAR[1].name:''].filter(Boolean).join(' und ')+'.');
+  dlgSay(pages,[{t:'Weiter',fn:morHub}],MOR_NAME);return true;
+}
+function morPetConfirm(){
+  const p=morPetCand(),v=morPetV();
+  if(!p){dlgSay(['Du hast keinen '+VARN[v]+'-Schleimi. Such weiter – er kommt aus den ersten Eiern, wenn das Glück will.'],[{t:'Zurück',fn:morHub}],MOR_NAME);return;}
+  const eq=S.equipped.includes(p.id);
+  dlgSay([VARN[v]+'-Schleimi, +'+fmt(p.mps)+'/s'+(eq?' (gerade im Team)':'')+'. Das ist der schwächste, den du hast.\n\nWenn du ihn mir gibst, gehört er der Sporenmutter. Das lässt sich nicht rückgängig machen.'],
+    [{t:'Ja, nimm ihn.',fn:morPetGive},{t:'Doch nicht.',fn:morHub}],MOR_NAME);
+}
+function morPetGive(){
+  const p=morPetCand(),v=morPetV();if(!p){morHub();return;}
+  S.pets=S.pets.filter(q=>q.id!==p.id);S.equipped=S.equipped.filter(id=>id!==p.id);
+  recalc();try{rebuildPets();}catch(e){}netDirty.pt=1;
+  S.mq=(S.mq|0)+1;save();
+  burstFx(MRX,2.5,MRZ,v===2?0xff7ae0:0xffe070,60,8,6,1.1);ring(MRX,.1,MRZ,0x8affb0,6,.9);beep(520,.25,'triangle',.09,1.5);setTimeout(()=>beep(780,.3,'triangle',.09,1.9),170);
+  if(S.mq===3){
+    dlgSay(['Schau, wie er funkelt! Alle Farben auf einmal … Die Sporenmutter öffnet sich.','Fast geschafft. Jetzt braucht sie noch Licht, damit der Wald sie wiederfindet. Bring mir einen GLANZ-SCHLEIMI.'],[{t:'Weiter',fn:morHub}],MOR_NAME);
+  }else{
+    morFinish();
+  }
+}
+function morFinish(){
+  giveTal('spore');
+  flashScreen(0xb8ffc8,.8);addShake(.3);beep(392,.5,'triangle',.1,1.6);setTimeout(()=>beep(587,.5,'triangle',.1,1.6),180);setTimeout(()=>beep(784,.9,'triangle',.1,2),360);
+  burstFx(MRX,2.5,MRZ,0x8affb0,90,9,7,1.3);ring(MRX,.1,MRZ,0xf4ead0,8,1);
+  toast('🍄 Talisman erhalten: Morchels Sporenlocke!','good');toast('Neu: Morchelhut & Sporenmantel (Figur)','good');
+  netDirty.cs=1;
+  dlgSay(['Da! Siehst du das Licht? Die ganze Höhle atmet wieder.','Als Dank bekommst du meine Sporenlocke. Ein Talisman – trägst du schon ein Ei und läufst, ziehen dich alle Eier in der Nähe von selbst an, doppelt so weit wie sonst. Leg sie im Figur-Menü an.','Und für dein Aussehen: einen Morchelhut und einen Sporenmantel. Trag sie mit Stolz. Sie sind ein bisschen feucht.'],[{t:'Danke, Morchel!',fn:morHub}],MOR_NAME);
+}
+function morHub(){
+  const q=S.mq|0,ch=[];
+  ch.push({t:q>=4?'Wie geht es der Sporenmutter?':'Auftrag & Fortschritt',fn:()=>dlgSay(morStatusPages(),[{t:'Zurück',fn:morHub}],MOR_NAME)});
+  if(q===1){const gl=morGiveList();ch.push({t:gl.length?'Eier aus dem Lager abgeben ('+gl.length+' passend)':'Eier aus dem Lager abgeben',dis:!gl.length,fn:morDeliver});}
+  if(q===2||q===3){const p=morPetCand();ch.push({t:'Haustier übergeben: '+VARN[morPetV()]+'-Schleimi'+(p?'':' (keinen)'),dis:!p,fn:morPetConfirm});}
+  ch.push({t:'Was bekomme ich dafür?',fn:()=>dlgSay(['Drei Dinge: meine Sporenlocke (ein Talisman, der Eier in doppelter Reichweite aufsammelt, sobald du eines trägst und läufst), einen Morchelhut und einen Sporenmantel.'],[{t:'Zurück',fn:morHub}],MOR_NAME)});
+  ch.push({t:'Wer bist du eigentlich?',fn:()=>dlgSay(['Morchel. Ich sammle Pilze, seit der Wald noch ein Fleck war. Dieser Gang führt zur Sporenmutter – dem ältesten Pilz im Pilzwald.','Sie wird schwächer. Seit die Eier immer seltener auf den alten Wegen liegen, fehlt ihr der Nährboden. Und die Farbe. Und das Licht.'],[{t:'Zurück',fn:morHub}],MOR_NAME)});
+  ch.push({t:'Tschüss, Morchel.',fn:()=>dlgSay([q>=4?'Komm vorbei, wenn du Pilze brauchst. Oder Gesellschaft.':'Lauf vorsichtig. Und lass die Hüter nicht an deinen Stiefeln schnüffeln.'],[{t:'Bis bald.',fn:dlgClose}],MOR_NAME)});
+  const greet=q>=4?'Da ist ja mein Lieblingsläufer! Die Sporenmutter hat nach dir gefragt.':pick(['Oh, du schon wieder! Wie schön. Komm, setz dich nicht, ich habe zu tun.','Ich rieche Eierschale. Gute Wahl, hierher zu kommen.','Pssst. Nicht so laut. Die Sporen schlafen.']);
+  dlgSay([greet],ch,MOR_NAME);
+}
+function morTalk(){
+  if(dlgOpen)return;
+  if(!S.mmet){
+    S.mmet=1;S.mq=1;save();
+    dlgSay(['Pssst! Nicht so laut. Du trampelst über meine Sporen.','Morchel. Pilzsammlerin. Und das da hinten ist die Sporenmutter, der älteste Pilz im Pilzwald. Sie stirbt. Langsam, aber sicher.','Ich kann sie retten – mit deiner Hilfe. Sie braucht erst Nährboden: 100 '+RAR[0].name+'e Eier und 50 '+RAR[1].name+'e. Danach Farbe, ein Regenbogen-Schleimi. Und zuletzt Licht, ein Glanz-Schleimi.','Zur Belohnung gebe ich dir etwas von mir: meine Sporenlocke, einen Hut und einen Mantel. Na?'],
+      [{t:'Das mache ich.',fn:morHub},{t:'Warum Eier?',fn:()=>dlgSay(['Pilze lieben Schale. Das Kalzium! Und was in den Eiern steckt, kriecht in den Boden und macht die Sporen kräftig. Je mehr, desto besser.'],[{t:'Alles klar.',fn:morHub}],MOR_NAME)},{t:'Später.',fn:dlgClose}],MOR_NAME);
+  }else morHub();
+}
+function morTick(dtr,time){
+  if(!MOR_ON)return;
+  if(morAnim)morAnimate(dtr,time);
+  if(started){const z=morZone();if(z&&!morIn&&!dlgOpen){morIn=true;morTalk();}else if(!z)morIn=false;}
+}
+
 
 /* ---------- Update ---------- */
 function fenceCollide(){
@@ -5150,6 +5372,7 @@ function updatePlayer(dt){
   if(P.x<.6){const dd=Math.hypot(P.x,P.z),lim=LOBBY_RH-1.4;if(P.x<0&&dd>lim){P.x*=lim/dd;P.z*=lim/dd;}
     if(Math.abs(P.z)>HW-.9&&P.x>-.6)P.x=-.6;fenceCollide();}
   else if(NPC_ON&&npcOpen()&&Math.abs(P.x-NPX)<3.3+(P.z*NPS>HW-.9?0:.01)){const sg=NPS,lim=HW+35.2;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,NPX-3.3,NPX+3.3);}
+  else if(MOR_ON&&Math.abs(P.x-MRX)<3.3+(P.z*MRS>HW-.9?0:.01)){const sg=MRS,lim=HW+MRL-.8;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,MRX-3.3,MRX+3.3);}
   else if(MERCH_ON&&Math.abs(P.x-MX)<3.3+(P.z*S.ms>HW-.9?0:.01)){const sg=S.ms,lim=HW+35.2;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,MX-3.3,MX+3.3);}
   else P.z=clamp(P.z,-HW+.9,HW-.9);
   const spd=Math.hypot(P.vx,P.vz);P.spd=spd;
@@ -5178,7 +5401,7 @@ function updateEggs(dt){
   }
 }
 function inSafe(){if(P.x<0)return true;return NAREAS>36&&P.x>=AX[36]&&P.x<AX[36]+SAFE2;}
-function checkPlot(){if(inSafe()){if(carried.length)secure();else if(mobs.length)despawnMobs(true);}else if(NPC_ON&&mobs.length&&!carried.length&&npcZone())despawnMobs(true);}
+function checkPlot(){if(inSafe()){if(carried.length)secure();else if(mobs.length)despawnMobs(true);}else if(mobs.length&&!carried.length&&((NPC_ON&&npcZone())||morZone()))despawnMobs(true);}
 let time=0;
 function updateVisuals(dt){if(window.MH_TEST){if(S.money<1e30)S.money=1e30;if(!S.merch)S.merch=1;}dtGlobal=dt;updateEnv(time,dt);updateShopsVis(dt,time);updateShopLabels();tickHold(dt);
   eggs.forEach((e,i)=>{
@@ -5283,8 +5506,9 @@ function renderFig(){
   const row=(t,items)=>'<div><div style="font:400 14px var(--display);margin-bottom:6px;opacity:.85">'+t+'</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+items+'</div></div>';
   const sw=(k)=>COLS.map((col,i)=>'<button class="btn" data-cs="'+k+':'+i+'" style="width:38px;height:38px;padding:0;background:'+col+';'+(c[k]===i?'outline:3px solid var(--gold)':'')+'" aria-label="Farbe '+(i+1)+'"></button>').join('');
   h+=row('Mütze',sw(0))+row('Shirt',sw(1));
-  h+=row('Kopfschmuck',HATS.map((n,i)=>{const ok=i>=6?(S.plv|0)>=i-5:nd>=HATN[i];return '<button class="btn" '+(ok?'data-cs="2:'+i+'"':'disabled style="opacity:.45"')+(c[2]===i&&ok?' style="outline:3px solid var(--gold)"':'')+'>'+n+(ok?'':' · '+(i>=6?'Plot-Vermessung '+(i-5):HATN[i]+' Haustiere im Index'))+'</button>';}).join(''));
+  h+=row('Kopfschmuck',HATS.map((n,i)=>{const ok=i===9?(S.mq|0)>=4:i>=6?(S.plv|0)>=i-5:nd>=HATN[i];return '<button class="btn" '+(ok?'data-cs="2:'+i+'"':'disabled style="opacity:.45"')+(c[2]===i&&ok?' style="outline:3px solid var(--gold)"':'')+'>'+n+(ok?'':' · '+(i===9?'Morchels Quest abschließen':i>=6?'Plot-Vermessung '+(i-5):HATN[i]+' Haustiere im Index'))+'</button>';}).join(''));
   h+=row('Umhang',CAPES.map((n,i)=>{const ok=capeOk(i);return '<button class="btn" '+(ok?'data-cs="3:'+i+'"':'disabled style="opacity:.45"')+(c[3]===i&&ok?' style="outline:3px solid var(--gold)"':'')+'>'+n+(ok?'':' · '+capeHint(i))+'</button>';}).join(''));
+  h+=talRow(row);
   const pc=myPlot();
   h+='<hr style="border:0;border-top:1px solid var(--line);width:100%"><div style="font:400 18px var(--display)">Dein Plot</div>';
   h+=row('Boden',PFLOORS.map((f,i)=>'<button class="btn" data-pl="0:'+i+'"'+(pc[0]===i?' style="outline:3px solid var(--gold)"':'')+'>'+f[0]+'</button>').join(''));
@@ -5292,6 +5516,7 @@ function renderFig(){
   h+=row('Dekoration',PDECO.map((n,i)=>{const ok=nd>=PDECN[i];return '<button class="btn" '+(ok?'data-pl="2:'+i+'"':'disabled style="opacity:.45"')+(pc[2]===i&&ok?' style="outline:3px solid var(--gold)"':'')+'>'+n+(ok?'':' · '+PDECN[i]+' Haustiere im Index')+'</button>';}).join(''));
   $('figBody').innerHTML=h;$('figSub').textContent='Mitspieler sehen Figur und Plot · '+nd+' Haustiere im Index';
   $('figBody').querySelectorAll('[data-pl]').forEach(b=>b.onclick=()=>{const q=b.dataset.pl.split(':');setPlotV(+q[0],+q[1]);});
+  $('figBody').querySelectorAll('[data-tal]').forEach(b=>b.onclick=()=>talEquip(b.dataset.tal));
   $('figBody').querySelectorAll('[data-cs]').forEach(b=>b.onclick=()=>{const q=b.dataset.cs.split(':');setCosV(+q[0],+q[1]);});
 }
 function closePanels(){$('mSet').hidden=true;$('mFig').hidden=true;$('mInv').hidden=true;$('mUp').hidden=true;$('mIdx').hidden=true;}
@@ -5655,7 +5880,7 @@ function frame(now){
   const dt=dtr*timeScale;time+=dt;
   if(started&&!dlgOpen){updatePlayer(dt);checkPlot();updateMobs(dt,time);fxTick(dt);}
   else if(!started){P.vx=P.vz=0;P.spd=0;}
-  updateEggs(dt);npcTick(dtr,time);
+  updateEggs(dt);npcTick(dtr,time);morTick(dtr,time);talTick(dtr);
   if(started){S.money+=incomeVal*dtr;updatePads();saveT+=dtr;if(saveT>5){saveT=0;save();}}
   updateVisuals(dt);updateRemotes(dt,dtr);netTick(dtr);updatePops(dt);updateParticles(dt);updateRingsBeams(dt);updateCamera(dtr);updateHUD();
   if(!$('mUp').hidden){cache.upT=(cache.upT||0)+dtr;if(cache.upT>.5){cache.upT=0;renderUp();}}
