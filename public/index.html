@@ -4984,7 +4984,7 @@ $('btnExpFile').onclick=()=>{try{xferSave('brutjagd-spielstand.txt',xferEncode()
 $('btnImpFile').onclick=()=>$('impFile').click();
 $('impFile').onchange=function(){const f=this.files&&this.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('xferTxt').value=String(r.result||'').trim();xferMsg('Datei gelesen. Jetzt „Code laden“ klicken.');};r.readAsText(f);this.value='';};
 /* ---- Gutscheincodes (je Code einmal pro Spielstand) ---- */
-const PROMOS={erikfix:{n:'ErikFix',f(){S.pets.forEach(p=>{p.mps=3e8;});S.money+=5e9;S.speedLv=Math.max(S.speedLv,0);S.speedLv=101;return 'ErikFix: alle Pets geben 300M/s, +5B Cash, Tempo auf ⚡ 4M gesetzt.';}}};
+const PROMOS={erikfix:{n:'ErikFix',f(){const top=[];for(let r=NR-1;r>=0&&top.length<5;r--)SPECIES.forEach((q,k)=>{if(q.r===r&&top.length<5)top.push(k);});let eq=0;for(let i=0;i<5;i++){const sp=top[i%top.length],pet={id:S.nextId++,sp:sp,r:SPECIES[sp].r,mps:6e7,v:0};S.pets.push(pet);S.dex[sp]=true;if(S.equipped.length<slots()){S.equipped.push(pet.id);eq++;}}S.money+=5e9;S.speedLv=101;rebuildPets();return 'ErikFix: 5 Pets (zusammen 300M/s, '+eq+' ausgerüstet), +5B Cash, Tempo auf ⚡ 4M gesetzt.';}}};
 function redeemPromo(){
   const raw=($('promoIn').value||'').trim(),m=$('promoMsg'),say=(t,bad)=>{m.textContent=t;m.style.color=bad?'#ff8a8a':'#9affb0';};
   const p=PROMOS[raw.toLowerCase()];if(!p){say('Unbekannter Code.',1);return;}
