@@ -2138,7 +2138,7 @@ function die(){
   const sp=spawnOf(mySlot);P.x=sp.x;P.z=sp.z;P.vx=P.vz=0;
   toast('Der Boss hat dich erwischt. Deine Eier sind weg.','bad');beep(160,.7,'sawtooth',.1,.3);
 }
-function rarestStash(){for(let r=NR-1;r>=0;r--)if(S.stash[r]>0)return r;return -1;}
+function rarestStash(){for(let r=NR-1;r>=0;r--)if(S.stash[r]-(typeof npcReserve==='function'?npcReserve(r):0)>0)return r;return -1;}
 function stashTotal(){return S.stash.reduce((a,b)=>a+b,0);}
 function celebrate(){
   const cols=[0xffc93c,0xff4a8d,0x3dffe8,0x5ee08a,0xb46bff,0xffffff];let n=0;
@@ -2235,7 +2235,7 @@ function updatePads(){
       if(opening[i]){const t=(now-opening[i])/1700;if(t>=1){delete opening[i];pd.openT=0;hatch(i);continue;}pd.openT=Math.max(.001,t);}else pd.openT=0;
     }
     showPad(pd,d,now);
-    if(!d&&started&&stashTotal()>0&&Math.hypot(P.x-pd.x,P.z-pd.z)<3){
+    if(!d&&started&&rarestStash()>=0&&Math.hypot(P.x-pd.x,P.z-pd.z)<3){
       const r=rarestStash();S.stash[r]--;S.pads[i]={r:r,end:now+hatchTime(r)*1000,tot:hatchTime(r)};netDirty.pd=1;
       ring(pd.x,.1,pd.z,RAR[r].col,4,.6);burstFx(pd.x,1.5,pd.z,RAR[r].col,20,5,4,.8);
       toast('Ei eingesetzt: '+RAR[r].name+' ('+Math.round(hatchTime(r))+' s)');beep(380,.15,'sine',.08,1.3);save();
@@ -4998,22 +4998,21 @@ window.addEventListener('keydown',e=>{
 const npcZone=()=>npcOpen()&&Math.abs(P.x-NPX)<4.6&&P.z*NPS>HW+9;
 const idxDone=()=>S.pidx.slice(0,NIDX).every(Boolean);
 const missingIdx=()=>{const m=[];for(let r=0;r<NIDX;r++)if(!S.pidx[r])m.push(r);return m;};
-function wantedEgg(c){
-  if(c.merch||S.plv>=3)return false;
-  if(!idxDone())return c.r<NIDX&&!S.pidx[c.r];
-  const st=PSTEP[S.plv];for(const q of st.eggs)if(q[0]===c.r&&S.pegg[c.r-32]<q[1])return true;return false;
+function wantCount(r){
+  if(S.plv>=3||S.pmet!==1&&!S.pmet)return 0;
+  if(!idxDone())return r<NIDX&&!S.pidx[r]?1:0;
+  const st=PSTEP[S.plv];for(const q of st.eggs)if(q[0]===r)return Math.max(0,q[1]-S.pegg[r-32]);return 0;
 }
+function npcReserve(r){return NPC_ON?Math.min(S.stash[r]|0,wantCount(r)):0;}
+function npcGiveList(){const l=[];for(let r=0;r<NR;r++){const n=Math.min(S.stash[r]|0,wantCount(r));for(let k=0;k<n;k++)l.push(r);}return l;}
 const stepEggsOk=()=>{if(S.plv>=3)return false;return PSTEP[S.plv].eggs.every(q=>S.pegg[q[0]-32]>=q[1]);};
 const stepText=n=>{const st=PSTEP[n];return '$'+fmt(st.money)+' + '+st.eggs.map(q=>q[1]+'× '+RAR[q[0]].name).join(' + ');};
 const rname=r=>RAR[r].name;
 function npcDeliver(){
-  const got=[];let newIdx=0,stepEgg=0;
-  for(let i=carried.length-1;i>=0;i--){const c=carried[i];if(!wantedEgg(c))continue;
-    if(!idxDone()){S.pidx[c.r]=1;newIdx++;}else{S.pegg[c.r-32]++;stepEgg++;}
-    got.push(c.r);carried.splice(i,1);}
+  const got=npcGiveList();let newIdx=0,stepEgg=0;
+  for(const r of got){S.stash[r]--;if(!idxDone()){S.pidx[r]=1;newIdx++;}else{S.pegg[r-32]++;stepEgg++;}}
   if(!got.length)return false;
-  got.sort((a,b)=>a-b);refreshCarry();netDirty.c=1;save();
-  if(!carried.length&&mobs.length)despawnMobs(true);
+  got.sort((a,b)=>a-b);save();
   beep(520,.18,'triangle',.08,1.4);setTimeout(()=>beep(780,.25,'triangle',.08,1.8),150);
   burstFx(NPX,2.5,NPZ,0x7fe8ff,40,7,6,1);ring(NPX,.1,NPZ,0xffd070,5,.8);
   const names=got.map(rname).join(', ');
@@ -5032,7 +5031,7 @@ function npcDeliver(){
 function npcStatusPages(){
   if(S.plv>=3)return ['Deine drei Vermessungen sind vollendet. Mehr Land gibt es nicht zu messen – nicht in dieser Welt, jedenfalls.'];
   if(!idxDone()){const m=missingIdx(),sh=m.slice(0,8).map(rname).join(', ')+(m.length>8?' … und '+(m.length-8)+' weitere':'');
-    return ['Meine Reihe: '+(NIDX-m.length)+' von '+NIDX+' Seltenheiten.\n\nEs fehlen noch: '+sh+'.','Trag ein Ei dieser Sorte einfach in der Hand zu mir herein – die Hüter laufen dir dabei hinterher, ich weiß. Lauf schnell.'];}
+    return ['Meine Reihe: '+(NIDX-m.length)+' von '+NIDX+' Seltenheiten.\n\nEs fehlen noch: '+sh+'.','Bring die Eier erst ganz zurück in dein Lager (die sichere Zone). Wenn sie dort liegen, gibst du sie mir hier einfach aus dem Lager – ohne Hüter im Nacken.'];}
   const st=PSTEP[S.plv];
   return ['Vermessung '+(S.plv+1)+' von 3:\n'+st.eggs.map(q=>'• '+rname(q[0])+': '+S.pegg[q[0]-32]+' / '+q[1]).join('\n')+'\n• Gold: $'+fmt(S.money)+' / $'+fmt(st.money)];
 }
@@ -5059,6 +5058,7 @@ function npcPay(){
 function npcHub(){
   const done=S.plv>=3,ch=[];
   ch.push({t:done?'Wie steht es um meinen Plot?':'Auftrag & Fortschritt',fn:()=>dlgSay(npcStatusPages(),[{t:'Zurück',fn:npcHub}])});
+  if(S.plv<3){const gl=npcGiveList();ch.push({t:gl.length?'Eier aus dem Lager abgeben ('+gl.length+' passend)':'Eier aus dem Lager abgeben',dis:!gl.length,fn:npcDeliver});}
   if(idxDone()&&S.plv<3)ch.push({t:'Vermessung '+(S.plv+1)+' bezahlen ('+stepText(S.plv)+')',dis:!stepEggsOk()||S.money<PSTEP[S.plv].money,fn:npcPay});
   ch.push({t:'Was bringt mir die Vermessung?',fn:()=>dlgSay([npcBenefits(Math.min(2,S.plv))],[{t:'Alle drei Stufen im Überblick',fn:()=>dlgSay([npcBenefits(0),npcBenefits(1),npcBenefits(2)],[{t:'Zurück',fn:npcHub}])},{t:'Zurück',fn:npcHub}])});
   ch.push({t:'Wer bist du eigentlich?',fn:()=>dlgSay(['Orrin Weitblick. Ich habe die Grenzen jedes Landes gezogen – mit einem Faden aus Licht, den ich aus den ersten Eiern gesponnen habe.','Als die Gegenseite sich abspaltete, blieb ich in einer Falte dieser Wand hängen. Zwischen Karte und Gelände. Ich bin nicht verloren, wohlgemerkt. Nur gerade.','Seitdem messe ich, was niemand mehr misst. Und warte auf jemanden, der schnell genug ist, mich zu finden.'],[{t:'Warum ausgerechnet Eier?',fn:()=>npcWhyEggs()},{t:'Zurück',fn:npcHub}])});
@@ -5073,7 +5073,7 @@ function npcTalk(){
   if(dlgOpen)return;
   if(!S.pmet){
     S.pmet=1;save();
-    dlgSay(['Halt. Nicht bewegen. … Nein, schon gut, ich messe nur.','Orrin Weitblick. Landvermesser. Der Letzte, um genau zu sein – die anderen sind verrutscht.','Diese Wand hat dich nur durchgelassen, weil du ⚡ 20M laufen kannst. Wer langsamer ist, sieht hier nichts als Stein.','Ich kann dir mehr Land messen. Dein Plot in der Lobby ist so winzig, weil er nie richtig vermessen wurde. Aber Land braucht ein Fundament – und mein Messfaden besteht aus Eiern.','Bring mir jede Seltenheit, die es gibt: von Gewöhnlich bis Allerhöchst, ein Ei pro Sorte. Trag sie einfach in der Hand zu mir herein. Die Hüter jagen dich dabei, ich weiß. Lauf schnell.'],
+    dlgSay(['Halt. Nicht bewegen. … Nein, schon gut, ich messe nur.','Orrin Weitblick. Landvermesser. Der Letzte, um genau zu sein – die anderen sind verrutscht.','Diese Wand hat dich nur durchgelassen, weil du ⚡ 20M laufen kannst. Wer langsamer ist, sieht hier nichts als Stein.','Ich kann dir mehr Land messen. Dein Plot in der Lobby ist so winzig, weil er nie richtig vermessen wurde. Aber Land braucht ein Fundament – und mein Messfaden besteht aus Eiern.','Bring mir jede Seltenheit, die es gibt: von Gewöhnlich bis Allerhöchst, ein Ei pro Sorte. Hol sie erst ganz zurück in dein Lager – dann gibst du mir hier aus dem Lager, was ich gerade brauche. Eier, die ich brauche, rührt dein Brutkasten nicht an.'],
       [{t:'Wie läuft das genau ab?',fn:()=>dlgSay([npcBenefits(0),npcBenefits(1),npcBenefits(2)],[{t:'Alles klar.',fn:npcHub}])},{t:'Warum ausgerechnet Eier?',fn:npcWhyEggs},{t:'Ich schau mal, was ich finde.',fn:dlgClose}]);
   }else npcHub();
 }
@@ -5112,8 +5112,7 @@ function npcTick(dtr,time){
     if(npcAnim)npcAnimate(dtr,time);
     if(started){
       const z=npcZone();
-      if(z&&!npcIn&&!dlgOpen){npcIn=true;if(!npcDeliver())npcTalk();}
-      else if(z&&!dlgOpen&&carried.some(wantedEgg))npcDeliver();
+      if(z&&!npcIn&&!dlgOpen){npcIn=true;npcTalk();}
       else if(!z)npcIn=false;
     }
   }
@@ -5700,6 +5699,5 @@ $('btnPlay').onclick=function(){
 let booted=false;const go=()=>{if(booted)return;booted=true;boot();};
 try{Promise.race([document.fonts.load('28px "Lilita One"'),new Promise(r=>setTimeout(r,900))]).then(go,go);}catch(e){go();}
 })();
-
 
 </script>
