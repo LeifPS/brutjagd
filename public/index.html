@@ -882,7 +882,7 @@ function buildShell(i){
   if(lv>=1){
     const hedge=HM.hedge||(HM.hedge=new THREE.MeshStandardMaterial({color:0x2f7a3c,roughness:.9,flatShading:true})),trunk=HM.trunk||(HM.trunk=new THREE.MeshStandardMaterial({color:0x5a3a22,roughness:.9}));
     const tree=(x,z,s)=>{fenceBox(fg,.5*s,2.2*s,.5*s,x,1.1*s,z,trunk);const a=new THREE.Mesh(GSPH,hedge);a.scale.set(2.2*s,2*s,2.2*s);a.position.set(x,2.9*s,z);a.castShadow=true;fg.add(a);const b=new THREE.Mesh(GSPH,hedge);b.scale.set(1.5*s,1.4*s,1.5*s);b.position.set(x+.3*s,4.1*s,z);fg.add(b);};
-    const nT=[0,4,6,8][lv];for(let k=0;k<nT;k++){const z=-HZ+3+(HZ*2-6)*(k/(nT-1||1));tree(-HX+1.6,z,.9+lv*.12);}
+    const nT=[0,4,6,0][lv];for(let k=0;k<nT;k++){const z=-HZ+3+(HZ*2-6)*(k/(nT-1||1));tree(-HX+1.6,z,.9+lv*.12);}
     if(lv>=2)for(const sz of[-1,1])for(let x=-HX+4;x<HX-4;x+=3.4){const h=new THREE.Mesh(GBOX,hedge);h.scale.set(2.2,.9,.8);h.position.set(x,.45,sz*(HZ-1.3));fg.add(h);}
     const fl=[0xff7ac8,0xffe45a,0x7ad0ff,0xff8a4a,0xc49bff];
     for(let k=0;k<[0,8,14,22][lv];k++){const a=k*2.399,rr=(HX-3)*(.3+((k*37)%10)/16),x=Math.cos(a)*rr*.9,z=Math.sin(a)*(HZ-3)*(.3+((k*53)%10)/16);
