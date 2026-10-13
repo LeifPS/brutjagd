@@ -986,7 +986,7 @@ function makePortal(x,z,ry,o){
   /* Blitze */
   const arcs=[];for(let i=0;i<4;i++){const gm=new THREE.BufferGeometry(),pos=new Float32Array(16*3);gm.setAttribute('position',new THREE.BufferAttribute(pos,3));const ln=new THREE.Line(gm,new THREE.LineBasicMaterial({color:i%2?0xffffff:o.c2,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));ln.frustumCulled=false;g.add(ln);arcs.push({ln:ln,pos:pos,a:Math.random()*6.28,t:0});}
   const lab=makeLabel(512,256,13,6.5);lab.position.set(0,R*2.1+7,0);lab.rotation.y=Math.PI/2;g.add(lab);lab.userData.draw(o.lines.map(l=>({t:l[0],size:l[1],col:l[2]||'#fff'})));
-  const pt={x:x,z:z,kind:o.kind,aw:0,vm:vm,g:g};PORTALS.push(pt);
+  const pt={x:x,z:z,kind:o.kind,aw:0,vm:vm,g:g,rng:o.rng};PORTALS.push(pt);
   const half=o.half||80;let fr=0;
   envList.push({cx:x,half:half,u:{upd(t,dt){
     fr++;const want=o.kind==='to2'?(speed()>=W2V?1:0):1;pt.aw+=(want-pt.aw)*Math.min(1,dt*2);const aw=pt.aw;
@@ -1014,6 +1014,8 @@ function buildPortal(x,A){
 }
 function buildLobbyPortals(){
   makePortal(-30,0,Math.PI/2,{kind:'to2',c1:0x7a2aff,c2:0xff9aff,r:7,half:90,lines:[['WELTENTOR',44,'#ffffff'],['Welt 2 · ab ⚡ 15M Tempo',30,'#ffb0ff']]});
+  /* Zweites Weltentor am Ende von Gebiet 36: nur per E / „Betreten“, nie durch bloßes Dagegenlaufen */
+  {const pe=makePortal(W1END-9.5,0,Math.PI/2,{kind:'to2',c1:0x7a2aff,c2:0xff9aff,r:3.6,half:120,rng:11,lines:[['WELTENTOR',50,'#ffffff'],['Welt 2 · E drücken',30,'#ffb0ff']]});}
 }
 function buildHub(x,A,first){
   /* sichere Zone am Anfang jedes Welt-2-Gebiets: Portal zurück, grüne Markierung */
@@ -2071,7 +2073,7 @@ function nearUse(){
   if(!started)return null;let best=null,bd=1e9;
   for(const o of shops){if(o.d.k==='boost'&&!S.merch)continue;if(o.d.k==='padx'&&(S.plv|0)<2)continue;const d=Math.hypot(P.x-o.x,P.z-o.z);if(d<6&&d<bd){bd=d;best={k:o.d.k,x:o.x,z:o.z};}}
   const sg=plots[mySlot]&&plots[mySlot].sign;if(sg){const d=Math.hypot(P.x-sg.x,P.z-sg.z);if(d<5&&d<bd){bd=d;best={k:'slot',x:sg.x,z:sg.z};}}
-  for(const p of PORTALS){const d=Math.hypot(P.x-p.x,P.z-p.z);if(d<7&&d<bd){bd=d;best={k:'portal',p:p,x:p.x,z:p.z};}}
+  for(const p of PORTALS){const d=Math.hypot(P.x-p.x,P.z-p.z);if(d<(p.rng||7)&&d<bd){bd=d;best={k:'portal',p:p,x:p.x,z:p.z};}}
   if(!best)return null;
   if(best.k==='portal'){const p=best.p;best.hint=p.kind==='ft'?(IS_TOUCH?'Tippe auf „Betreten“':'E drücken')+': Schnellreise':p.kind==='to1'?(IS_TOUCH?'Tippe auf „Betreten“':'E drücken')+': zurück zur Lobby':(speed()>=W2V?(IS_TOUCH?'Tippe auf „Betreten“':'E drücken')+': Weltentor betreten':'Das Tor schläft: du brauchst Tempo ⚡ 15M');return best;}
   const u=upInfo(best.k);best.hint=u.mx?UPN[best.k]+': Maximum erreicht':(IS_TOUCH?'Tippe auf „Kaufen“':'E drücken')+' ('+UPN[best.k]+' · $'+fmt(u.c)+(u.ok?'':' · zu wenig Geld')+')';
@@ -5142,8 +5144,8 @@ function updatePlayer(dt){
   const ctl={ix:ix,iy:iy,sp:speedEff()};{const fxI=AREAFX[areaIdx(P.x)];if(fxI&&fxI.input)fxI.input(ctl,dt,FXAPI);}
   ix=ctl.ix;iy=ctl.iy;
   const sp=ctl.sp,tx=(fx*iy+rx*ix)*sp,tz=(fz*iy+rz*ix)*sp,k=1-Math.exp(-14*dt);
-  P.vx+=(tx-P.vx)*k;P.vz+=(tz-P.vz)*k;P.x+=P.vx*dt;P.z+=P.vz*dt;
-  if(P.x<W1END)P.x=Math.min(P.x,W1END-1.2);else P.x=clamp(P.x,AX[36]+1.5,END-1.2);
+  const ox0=P.x;P.vx+=(tx-P.vx)*k;P.vz+=(tz-P.vz)*k;P.x+=P.vx*dt;P.z+=P.vz*dt;
+  if(ox0<W1END)P.x=Math.min(P.x,W1END-1.2);else P.x=clamp(P.x,AX[36]+1.5,END-1.2);
   if(P.x<.6){const dd=Math.hypot(P.x,P.z),lim=LOBBY_RH-1.4;if(P.x<0&&dd>lim){P.x*=lim/dd;P.z*=lim/dd;}
     if(Math.abs(P.z)>HW-.9&&P.x>-.6)P.x=-.6;fenceCollide();}
   else if(NPC_ON&&npcOpen()&&Math.abs(P.x-NPX)<3.3+(P.z*NPS>HW-.9?0:.01)){const sg=NPS,lim=HW+35.2;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,NPX-3.3,NPX+3.3);}
