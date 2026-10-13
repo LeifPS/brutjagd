@@ -5013,6 +5013,7 @@ function npcDeliver(){
     got.push(c.r);carried.splice(i,1);}
   if(!got.length)return false;
   got.sort((a,b)=>a-b);refreshCarry();netDirty.c=1;save();
+  if(!carried.length&&mobs.length)despawnMobs(true);
   beep(520,.18,'triangle',.08,1.4);setTimeout(()=>beep(780,.25,'triangle',.08,1.8),150);
   burstFx(NPX,2.5,NPZ,0x7fe8ff,40,7,6,1);ring(NPX,.1,NPZ,0xffd070,5,.8);
   const names=got.map(rname).join(', ');
@@ -5177,7 +5178,7 @@ function updateEggs(dt){
   }
 }
 function inSafe(){if(P.x<0)return true;return NAREAS>36&&P.x>=AX[36]&&P.x<AX[36]+SAFE2;}
-function checkPlot(){if(inSafe()){if(carried.length)secure();else if(mobs.length)despawnMobs(true);}}
+function checkPlot(){if(inSafe()){if(carried.length)secure();else if(mobs.length)despawnMobs(true);}else if(NPC_ON&&mobs.length&&!carried.length&&npcZone())despawnMobs(true);}
 let time=0;
 function updateVisuals(dt){if(window.MH_TEST){if(S.money<1e30)S.money=1e30;if(!S.merch)S.merch=1;}dtGlobal=dt;updateEnv(time,dt);updateShopsVis(dt,time);updateShopLabels();tickHold(dt);
   eggs.forEach((e,i)=>{
