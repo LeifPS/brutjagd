@@ -5458,7 +5458,9 @@ function kaelDoorTick(dt,time){
   const oa=kOcc(KX-KPDX),ob=kOcc(KX+KPDX);
   kPlates[0].on=oa;kPlates[1].on=ob;
   const inside=(P.z*KSD>HW+.5&&Math.abs(P.x-KX)<5)||kRemoteInside();
-  if(oa&&ob){if(kHold<=0)beep(330,.4,'sine',.08,1.8);kHold=12;}
+  const meOn=Math.hypot(P.x-(KX-KPDX),P.z-KPZ)<KPR||Math.hypot(P.x-(KX+KPDX),P.z-KPZ)<KPR;
+  if(oa&&ob){if(kHold<=0)beep(330,.4,'sine',.08,1.8);kHold=12;if(meOn&&!S.kopen){S.kopen=1;save();toast('Die Schwelle hat dich erkannt: Die Tür bleibt für dich dauerhaft offen.','good');}}
+  else if(S.kopen)kHold=12;
   else if(inside)kHold=Math.max(kHold,4);
   else kHold=Math.max(0,kHold-dt);
   const open=kHold>0;
@@ -5483,8 +5485,8 @@ const kAllOk=()=>kEggsDone()&&kPetsDone()&&kIdxDone();
 function kStatusPages(){
   if((S.kq|0)>=5)return ['Alles ist getan. Der Nullkern gehört dir – und die Schwelle steht dir offen, wann immer du sie mit einem Freund betrittst.'];
   const mp=KPETS.filter(s=>!S.kpet[s]),sh=mp.slice(0,6).map(s=>SPECIES[s].name).join(', ')+(mp.length>6?' … und '+(mp.length-6)+' weitere':'');
-  return ['Mein Katalog der Welt:\n• Eier (Gewöhnlich bis Prismatisch): '+kEggsHave()+' / '+(KMAXE+1)+'\n• Glanz-Haustiere (alle Arten bis Omega): '+kPetsHave()+' / '+KPETS.length+'\n• Pet-Index (ohne Mutationen): '+S.dex.filter(Boolean).length+' / '+S.dex.length+'\n• Gold: $'+fmt(S.money)+' / $'+fmt(KGOLD)+' (100 Qi)',
-    'Von jeder Seltenheit brauche ich EIN Ei, aus deinem Lager. Von jeder Art einen Glanz-Schleimi und seine Verwandten – gib mir davon jeweils den schwächsten. Der Index muss vollständig sein; den prüfe ich nur, den behältst du.'+(mp.length?'\n\nNoch ohne Glanz-Abgabe: '+sh+'.':'')];
+  return ['Mein Katalog der Welt:\n• Eier (Gewöhnlich bis Prismatisch): '+kEggsHave()+' / '+(KMAXE+1)+'\n• Glanz-Haustiere (alle 78 Arten bis Omega): '+kPetsHave()+' / '+KPETS.length+'\n• Pet-Index (ohne Mutationen): '+S.dex.filter(Boolean).length+' / '+S.dex.length+'\n• Gold: $'+fmt(S.money)+' / $'+fmt(KGOLD)+' (100 Qi)',
+    'Von jeder Seltenheit brauche ich EIN Ei, aus deinem Lager. Jedes Ei hat drei Arten – von jeder dieser Arten, bis Omega, brauche ich ein Haustier in Glanz. Gib mir davon jeweils das schwächste. Der Index muss vollständig sein; den prüfe ich nur, den behältst du.'+(mp.length?'\n\nNoch ohne Glanz-Abgabe: '+sh+'.':'')];
 }
 function kaelDeliverEggs(){
   const l=kEggList();if(!l.length)return false;
@@ -5527,7 +5529,7 @@ function kaelHub(){
     ch.push({t:'Nullkern schmieden ($'+fmt(KGOLD)+')',dis:!kAllOk()||S.money<KGOLD,fn:kaelPay});
   }
   ch.push({t:'Was bekomme ich dafür?',fn:()=>dlgSay(['Den Nullkern: einen Talisman, der das Einkommen aller deiner Haustiere verdoppelt. Dazu die Nullkrone und den Ereignismantel.'],[{t:'Zurück',fn:kaelHub}],KAEL_NAME)});
-  ch.push({t:'Wer bist du eigentlich?',fn:()=>dlgSay(['Kael. Ich war der Erste, der den Rand der Welt sah. Man nennt mich den Nullmeister – weil ich dort bin, wo alle Rechnungen auf null gehen.','Die Tür zu meinem Gang öffnet sich nur, wenn zwei auf den Platten stehen. Die Leere teilt man, oder man betritt sie nicht.'],[{t:'Zurück',fn:kaelHub}],KAEL_NAME)});
+  ch.push({t:'Wer bist du eigentlich?',fn:()=>dlgSay(['Kael. Ich war der Erste, der den Rand der Welt sah. Man nennt mich den Nullmeister – weil ich dort bin, wo alle Rechnungen auf null gehen.','Die Tür zu meinem Gang öffnet sich nur, wenn zwei auf den Platten stehen. Wer es einmal gemeinsam geschafft hat, dem bleibt sie offen. Die Leere teilt man, oder man betritt sie nicht.'],[{t:'Zurück',fn:kaelHub}],KAEL_NAME)});
   ch.push({t:'Tschüss, Kael.',fn:()=>dlgSay([done?'Möge dein Weg immer bei null beginnen. Und bei einem Freund.':'Der Katalog wartet. Er ist geduldig.'],[{t:'Bis bald.',fn:dlgClose}],KAEL_NAME)});
   dlgSay([done?'Der Träger des Nullkerns. Du erhellst meinen Gang.':pick(['Zwei sind gekommen. Das ist selten.','Schritte in der Leere. Ich habe sie gezählt.','Der Katalog zeigt noch Lücken. Aber du bist hier.'])],ch,KAEL_NAME);
 }
@@ -5535,7 +5537,7 @@ function kaelTalk(){
   if(dlgOpen)return;
   if(!S.kmet){
     S.kmet=1;save();
-    dlgSay(['… Zwei Schritte auf den Platten. Zwei Atemzüge. Die Tür hat dich eingelassen.','Kael Nullmeister. Hüter der Schwelle. Ich sammle, was die Welt ausmacht, und forge daraus einen Nullkern.','Dafür brauche ich: ein Ei von jeder Seltenheit bis Prismatisch. Einen Glanz-Schleimi und alle seine Verwandten bis Omega – von jeder Art einen. Dein Pet-Index muss vollständig sein. Und 100 Qi.','Der Nullkern verdoppelt das Einkommen deiner Haustiere. Dazu gibt es Krone und Mantel.'],
+    dlgSay(['… Zwei Schritte auf den Platten. Zwei Atemzüge. Die Tür hat dich eingelassen.','Kael Nullmeister. Hüter der Schwelle. Ich sammle, was die Welt ausmacht, und forge daraus einen Nullkern.','Dafür brauche ich: ein Ei von jeder Seltenheit bis Prismatisch. Alle Haustier-Arten bis Omega – drei pro Ei-Stufe, 78 insgesamt – jeweils einmal in Glanz. Dein Pet-Index muss vollständig sein. Und 100 Qi.','Der Nullkern verdoppelt das Einkommen deiner Haustiere. Dazu gibt es Krone und Mantel.'],
       [{t:'Das schaffe ich.',fn:kaelHub},{t:'Warum zwei Spieler?',fn:()=>dlgSay(['Die Schwelle öffnet sich nur für zwei, die gleichzeitig stehen. Niemand kommt allein an den Rand der Welt.'],[{t:'Verstanden.',fn:kaelHub}],KAEL_NAME)},{t:'Später.',fn:dlgClose}],KAEL_NAME);
   }else kaelHub();
 }
