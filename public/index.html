@@ -5355,7 +5355,8 @@ const KX=KAEL_ON?AX[41]+S.kx:-1e9,KSD=S.ksd||1,KL=36,KZ=KSD*(HW+27);
 const KPZ=KSD*(HW-3.4),KPDX=5.6,KPR=2.1;             /* Druckplatten: Mitte x±KPDX, Radius */
 const KMAXE=38,KPETR=25;                              /* Eier bis Prismatisch (38), Pets bis Omega (25) */
 const KGOLD=1e20;                                     /* 100 Qi */
-const KPETS=SPECIES.map((s,i)=>s.r<=KPETR?i:-1).filter(i=>i>=0);
+const KPETS=Array.from({length:KPETR+1},(_,i)=>i);        /* Ei-Stufen 0..25: je Stufe ein Glanz-Haustier (egal welche der 3 Arten) */
+if(!Array.isArray(S.kpt))S.kpt=[];while(S.kpt.length<=KPETR)S.kpt.push(0);
 let kDoor=null,kPlates=[],kAnim=null,kLab=null,kHold=0,kOpenP=0,kIn=false,kaelDoor=false;
 const KFAKE=[];                                        /* nur für Tests: künstliche Mitspieler [x,z] */
 
@@ -5477,16 +5478,16 @@ const kaelReserve=r=>Math.min(S.stash[r]|0,kEggWant(r));
 function kEggList(){const l=[];for(let r=0;r<=KMAXE;r++)if(kEggWant(r)&&(S.stash[r]|0)>0)l.push(r);return l;}
 const kEggsDone=()=>{for(let r=0;r<=KMAXE;r++)if(!S.kegg[r])return false;return true;};
 const kEggsHave=()=>S.kegg.slice(0,KMAXE+1).filter(Boolean).length;
-const kPetsDone=()=>KPETS.every(s=>S.kpet[s]);
-const kPetsHave=()=>KPETS.filter(s=>S.kpet[s]).length;
-function kPetPlan(){const l=[];if((S.kq|0)>=5||!S.kmet)return l;for(const s of KPETS){if(S.kpet[s])continue;let b=null;for(const p of S.pets)if(p.sp===s&&p.v===1&&(!b||p.mps<b.mps))b=p;if(b)l.push(b);}return l;}
+const kPetsDone=()=>KPETS.every(t=>S.kpt[t]);
+const kPetsHave=()=>KPETS.filter(t=>S.kpt[t]).length;
+function kPetPlan(){const l=[];if((S.kq|0)>=5||!S.kmet)return l;for(const t of KPETS){if(S.kpt[t])continue;let b=null;for(const p of S.pets)if(SPECIES[p.sp].r===t&&p.v===1&&(!b||p.mps<b.mps))b=p;if(b)l.push(b);}return l;}
 const kIdxDone=()=>S.dex.every(Boolean);
 const kAllOk=()=>kEggsDone()&&kPetsDone()&&kIdxDone();
 function kStatusPages(){
   if((S.kq|0)>=5)return ['Alles ist getan. Der Nullkern gehört dir – und die Schwelle steht dir offen, wann immer du sie mit einem Freund betrittst.'];
-  const mp=KPETS.filter(s=>!S.kpet[s]),sh=mp.slice(0,6).map(s=>SPECIES[s].name).join(', ')+(mp.length>6?' … und '+(mp.length-6)+' weitere':'');
-  return ['Mein Katalog der Welt:\n• Eier (Gewöhnlich bis Prismatisch): '+kEggsHave()+' / '+(KMAXE+1)+'\n• Glanz-Haustiere (alle 78 Arten bis Omega): '+kPetsHave()+' / '+KPETS.length+'\n• Pet-Index (ohne Mutationen): '+S.dex.filter(Boolean).length+' / '+S.dex.length+'\n• Gold: $'+fmt(S.money)+' / $'+fmt(KGOLD)+' (100 Qi)',
-    'Von jeder Seltenheit brauche ich EIN Ei, aus deinem Lager. Jedes Ei hat drei Arten – von jeder dieser Arten, bis Omega, brauche ich ein Haustier in Glanz. Gib mir davon jeweils das schwächste. Der Index muss vollständig sein; den prüfe ich nur, den behältst du.'+(mp.length?'\n\nNoch ohne Glanz-Abgabe: '+sh+'.':'')];
+  const mp=KPETS.filter(t=>!S.kpt[t]),sh=mp.slice(0,6).map(t=>RAR[t].name).join(', ')+(mp.length>6?' … und '+(mp.length-6)+' weitere':'');
+  return ['Mein Katalog der Welt:\n• Eier (Gewöhnlich bis Prismatisch): '+kEggsHave()+' / '+(KMAXE+1)+'\n• Glanz-Haustiere (je Ei-Stufe bis Omega eines): '+kPetsHave()+' / '+KPETS.length+'\n• Pet-Index (ohne Mutationen): '+S.dex.filter(Boolean).length+' / '+S.dex.length+'\n• Gold: $'+fmt(S.money)+' / $'+fmt(KGOLD)+' (100 Qi)',
+    'Von jeder Seltenheit brauche ich EIN Ei, aus deinem Lager. Dazu pro Ei-Stufe bis Omega EIN Haustier in Glanz – egal, welche der drei Arten dieser Stufe. Gib mir davon jeweils das schwächste. Der Index muss vollständig sein; den prüfe ich nur, den behältst du.'+(mp.length?'\n\nNoch ohne Glanz-Abgabe (Stufen): '+sh+'.':'')];
 }
 function kaelDeliverEggs(){
   const l=kEggList();if(!l.length)return false;
@@ -5503,12 +5504,12 @@ function kaelPetConfirm(){
 }
 function kaelPetGive(){
   const l=kPetPlan();if(!l.length){kaelHub();return;}
-  const ids=new Set(l.map(p=>p.id));for(const p of l)S.kpet[p.sp]=1;
+  const ids=new Set(l.map(p=>p.id));for(const p of l)S.kpt[SPECIES[p.sp].r]=1;
   S.pets=S.pets.filter(p=>!ids.has(p.id));S.equipped=S.equipped.filter(id=>!ids.has(id));
   recalc();try{rebuildPets();}catch(e){}netDirty.pt=1;save();
   burstFx(KX,2.5,KZ,0xffd070,60,8,6,1.1);ring(KX,.1,KZ,0xff5ad0,6,.9);beep(520,.25,'triangle',.09,1.5);setTimeout(()=>beep(780,.3,'triangle',.09,1.9),170);
   const left=KPETS.length-kPetsHave();
-  dlgSay(['Glanz, wie Licht an der Kante eines Ereignishorizonts. '+l.length+' Haustier'+(l.length>1?'e':'')+' in meinem Katalog.'+(left?'\n\nNoch '+left+' Arten ohne Glanz-Abgabe.':'\n\nAlle Arten bis Omega sind vollständig.')],[{t:'Weiter',fn:kaelHub}],KAEL_NAME);
+  dlgSay(['Glanz, wie Licht an der Kante eines Ereignishorizonts. '+l.length+' Haustier'+(l.length>1?'e':'')+' in meinem Katalog.'+(left?'\n\nNoch '+left+' Ei-Stufen ohne Glanz-Abgabe.':'\n\nAlle Stufen bis Omega sind vollständig.')],[{t:'Weiter',fn:kaelHub}],KAEL_NAME);
 }
 function kaelPay(){
   if((S.kq|0)>=5)return kaelHub();
@@ -5537,7 +5538,7 @@ function kaelTalk(){
   if(dlgOpen)return;
   if(!S.kmet){
     S.kmet=1;save();
-    dlgSay(['… Zwei Schritte auf den Platten. Zwei Atemzüge. Die Tür hat dich eingelassen.','Kael Nullmeister. Hüter der Schwelle. Ich sammle, was die Welt ausmacht, und forge daraus einen Nullkern.','Dafür brauche ich: ein Ei von jeder Seltenheit bis Prismatisch. Alle Haustier-Arten bis Omega – drei pro Ei-Stufe, 78 insgesamt – jeweils einmal in Glanz. Dein Pet-Index muss vollständig sein. Und 100 Qi.','Der Nullkern verdoppelt das Einkommen deiner Haustiere. Dazu gibt es Krone und Mantel.'],
+    dlgSay(['… Zwei Schritte auf den Platten. Zwei Atemzüge. Die Tür hat dich eingelassen.','Kael Nullmeister. Hüter der Schwelle. Ich sammle, was die Welt ausmacht, und forge daraus einen Nullkern.','Dafür brauche ich: ein Ei von jeder Seltenheit bis Prismatisch. Pro Ei-Stufe bis Omega ein Haustier in Glanz – egal welche der drei Arten, 26 insgesamt. Dein Pet-Index muss vollständig sein. Und 100 Qi.','Der Nullkern verdoppelt das Einkommen deiner Haustiere. Dazu gibt es Krone und Mantel.'],
       [{t:'Das schaffe ich.',fn:kaelHub},{t:'Warum zwei Spieler?',fn:()=>dlgSay(['Die Schwelle öffnet sich nur für zwei, die gleichzeitig stehen. Niemand kommt allein an den Rand der Welt.'],[{t:'Verstanden.',fn:kaelHub}],KAEL_NAME)},{t:'Später.',fn:dlgClose}],KAEL_NAME);
   }else kaelHub();
 }
