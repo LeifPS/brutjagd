@@ -564,7 +564,7 @@ if(S.dex.some(d=>!d))S.won=false;
 S.pets.forEach(p=>{if(p.v===undefined)p.v=p.shiny?1:0;});
 while(!S.eggFound||S.eggFound.length<NR){S.eggFound=S.eggFound||[];S.eggFound.push(0);}
 S.pets.forEach(p=>{delete p.ab;});
-{const L=(typeof ALEN!=='undefined'&&ALEN[39])||3000;if(!S.mx||S.mx<600||S.mx>L-600){S.mx=Math.round(600+Math.random()*(L-1200));}}if(!S.ms){S.ms=Math.random()<.5?-1:1;}S.boost=S.boost|0;S.merch=S.merch|0;{const L=(typeof ALEN!=='undefined'&&ALEN[35])||165,kmin=Math.ceil((L-70-14.5)/15),kmax=Math.floor((L-25-14.5)/15);if(!S.nxo||(S.nxo-14.5)%15!==0||S.nxo<14.5+15*kmin||S.nxo>14.5+15*kmax)S.nxo=14.5+15*(kmin+Math.floor(Math.random()*(kmax-kmin+1)));if(S.nsd!==1&&S.nsd!==-1)S.nsd=Math.random()<.5?-1:1;}S.plv=S.plv|0;S.padLv=S.padLv|0;S.pmet=S.pmet|0;if(!Array.isArray(S.pidx))S.pidx=[];while(S.pidx.length<32)S.pidx.push(0);if(!Array.isArray(S.pegg))S.pegg=[0,0,0,0];{const mo=[29.5,44.5,59.5];if(!mo.includes(S.mxo))S.mxo=mo[Math.floor(Math.random()*3)];if(S.msd!==1&&S.msd!==-1)S.msd=Math.random()<.5?-1:1;S.mq=S.mq|0;S.mmet=S.mmet|0;if(!Array.isArray(S.mg))S.mg=[0,0];while(S.mg.length<2)S.mg.push(0);if(!Array.isArray(S.tal))S.tal=[];if(typeof S.talEq!=='string')S.talEq='';}
+{const L=(typeof ALEN!=='undefined'&&ALEN[39])||3000;if(!S.mx||S.mx<600||S.mx>L-600){S.mx=Math.round(600+Math.random()*(L-1200));}}if(!S.ms){S.ms=Math.random()<.5?-1:1;}S.boost=S.boost|0;S.merch=S.merch|0;{const L=(typeof ALEN!=='undefined'&&ALEN[35])||165,kmin=Math.ceil((L-70-14.5)/15),kmax=Math.floor((L-25-14.5)/15);if(!S.nxo||(S.nxo-14.5)%15!==0||S.nxo<14.5+15*kmin||S.nxo>14.5+15*kmax)S.nxo=14.5+15*(kmin+Math.floor(Math.random()*(kmax-kmin+1)));if(S.nsd!==1&&S.nsd!==-1)S.nsd=Math.random()<.5?-1:1;}S.plv=S.plv|0;S.padLv=S.padLv|0;S.pmet=S.pmet|0;if(!Array.isArray(S.pidx))S.pidx=[];while(S.pidx.length<32)S.pidx.push(0);if(!Array.isArray(S.pegg))S.pegg=[0,0,0,0];{const mo=[29.5,44.5,59.5];if(!mo.includes(S.mxo))S.mxo=mo[Math.floor(Math.random()*3)];if(S.msd!==1&&S.msd!==-1)S.msd=Math.random()<.5?-1:1;S.mq=S.mq|0;S.mmet=S.mmet|0;if(!Array.isArray(S.mg))S.mg=[0,0];while(S.mg.length<2)S.mg.push(0);{const L=(typeof ALEN!=='undefined'&&ALEN[41])||4000;if(!S.kx||S.kx<700||S.kx>L-700)S.kx=Math.round(700+Math.random()*(L-1400));if(S.ksd!==1&&S.ksd!==-1)S.ksd=Math.random()<.5?-1:1;S.kq=S.kq|0;S.kmet=S.kmet|0;if(!Array.isArray(S.kegg))S.kegg=[];while(S.kegg.length<39)S.kegg.push(0);if(!Array.isArray(S.kpet))S.kpet=[];while(S.kpet.length<149)S.kpet.push(0);}if(!Array.isArray(S.tal))S.tal=[];if(typeof S.talEq!=='string')S.talEq='';}
 if(!S.ver||S.ver<3){
   const OLD=t=>t<8?[1.5,6,25,110,600,3500,20000,120000][t]:120000*Math.pow(3.2,t-7);
   S.pets.forEach(p=>{p.mps=Math.round(p.mps/OLD(p.r)*RAR[p.r].mps*10)/10;});
@@ -586,7 +586,7 @@ const MERCH_ON=NAREAS>39,MX=MERCH_ON?AX[39]+S.mx:-1e9,MZ=S.ms*(HW+30);
 const petOf=id=>S.pets.find(p=>p.id===id);
 S.equipped=S.equipped.filter(id=>petOf(id));
 let incomeVal=0;
-function recalc(){let t=0;for(const id of S.equipped){const p=petOf(id);if(p)t+=p.mps;}incomeVal=t*((S.plv|0)>=3?2:1);}
+function recalc(){let t=0;for(const id of S.equipped){const p=petOf(id);if(p)t+=p.mps;}incomeVal=t*((S.plv|0)>=3?2:1)*(S.talEq==='null'?2:1);}
 recalc();
 
 /* ---------- Formatierung ---------- */
@@ -1032,7 +1032,7 @@ function buildHub(x,A,first){
 function buildWorld(){
   buildHall();initPlotPads();initShops();initSigns();if(NAREAS>36)buildLobbyPortals();
   for(let i=0;i<NAREAS;i++){
-    const A=AREAS[i];buildSection(AX[i],ALEN[i],A,i===39?[{x:MX,w:8,s:S.ms}]:i===35&&NPC_ON?[{x:NPX,w:8,s:NPS,nop:true}]:i===13&&MOR_ON?[{x:MRX,w:8,s:MRS,nop:true}]:null);buildDeco(i);if(i===13&&MOR_ON)buildMorNiche(A);if(i===39)buildNiche(MX,S.ms);if(i===36&&NPC_ON)buildNpcNiche(A);
+    const A=AREAS[i];buildSection(AX[i],ALEN[i],A,i===39?[{x:MX,w:8,s:S.ms}]:i===35&&NPC_ON?[{x:NPX,w:8,s:NPS,nop:true}]:i===13&&MOR_ON?[{x:MRX,w:8,s:MRS,nop:true}]:i===41&&KAEL_ON?[{x:KX,w:8,s:KSD,nop:true}]:null);buildDeco(i);if(i===41&&KAEL_ON)buildKaelNiche(A);if(i===13&&MOR_ON)buildMorNiche(A);if(i===39)buildNiche(MX,S.ms);if(i===36&&NPC_ON)buildNpcNiche(A);
     if(i===36)buildHub(AX[i],A,true);
     if(i>0&&i!==36)buildGate(AX[i],A,[['GEBIET '+(i+1),34,'#ffffff'],[A.name,56,hex6(A.glow)],['Glück ×'+fmtD(A.luck)+' · '+A.mob.name,28,'#ffd7b0']]);
     else if(i===36)buildGate(AX[i],{wall:0x3a1a5a,glow:0xff9aff},[['WELT 2',40,'#ffffff'],[A.name,56,hex6(A.glow)],['Der lange Gang · '+A.mob.name,28,'#ffd7b0']]);
@@ -1766,10 +1766,10 @@ function removeEgg(i){const e=eggs[i];scene.remove(e.g);e.dot.remove();if(!e.mer
 
 /* ---------- Spieler-Modell (auch für Mitspieler) ---------- */
 const COLS=['#ff4a3d','#3b7bff','#35c46a','#ffb02e','#b05cff','#ff7ac8','#26d4d4','#f2f2f2','#222233','#8a5a2b'];
-const HATS=['Keine','Zylinder','Krone','Heiligenschein','Hörner','Prismenkrone','Messhut','Aurorakrone','Weltenkrone','Morchelhut'],HATN=[0,5,15,30,50,80,0,0,0,0];
-const CAPES=['Keiner','Rot','Gold','Regenbogen','Leere','Glitch','Kartenumhang','Sternenkarte','Goldmantel','Sporenmantel'];
-function capeOk(i){if(i<=0)return true;if(i===9)return (S.mq|0)>=4;if(i>=6)return (S.plv|0)>=i-5;const pv=v=>S.pets.some(p=>p.v>=v);return i===1?S.dex.filter(Boolean).length>=10:i===2?S.pets.some(p=>p.v===1):i===3?S.pets.some(p=>p.v===2):i===4?S.pets.some(p=>p.v===3):S.pets.some(p=>p.v>=4);}
-function capeHint(i){return['','10 Haustiere im Index','ein Glanz-Haustier','ein Regenbogen-Haustier','ein Leere-Haustier','ein Glitch- oder Prisma-Haustier','Plot-Vermessung 1','Plot-Vermessung 2','Plot-Vermessung 3','Morchels Quest abschließen'][i];}
+const HATS=['Keine','Zylinder','Krone','Heiligenschein','Hörner','Prismenkrone','Messhut','Aurorakrone','Weltenkrone','Morchelhut','Nullkrone'],HATN=[0,5,15,30,50,80,0,0,0,0,0];
+const CAPES=['Keiner','Rot','Gold','Regenbogen','Leere','Glitch','Kartenumhang','Sternenkarte','Goldmantel','Sporenmantel','Ereignismantel'];
+function capeOk(i){if(i<=0)return true;if(i===10)return (S.kq|0)>=5;if(i===9)return (S.mq|0)>=4;if(i>=6)return (S.plv|0)>=i-5;const pv=v=>S.pets.some(p=>p.v>=v);return i===1?S.dex.filter(Boolean).length>=10:i===2?S.pets.some(p=>p.v===1):i===3?S.pets.some(p=>p.v===2):i===4?S.pets.some(p=>p.v===3):S.pets.some(p=>p.v>=4);}
+function capeHint(i){return['','10 Haustiere im Index','ein Glanz-Haustier','ein Regenbogen-Haustier','ein Leere-Haustier','ein Glitch- oder Prisma-Haustier','Plot-Vermessung 1','Plot-Vermessung 2','Plot-Vermessung 3','Morchels Quest abschließen','Kaels Quest abschließen'][i];}
 function applyCos(o,c){
   c=Array.isArray(c)?c:[0,1,0,0];const ci=x=>COLS[(x|0)%COLS.length]||COLS[0];
   o.capM.color.set(ci(c[0]));o.shirtM.color.set(ci(c[1]));
@@ -1786,9 +1786,10 @@ function applyCos(o,c){
   else if(h===7){const m=M('#7fffd8',0x30ffb0);add(new THREE.TorusGeometry(.55,.05,8,24),m,0,2.6,0,1,1,1,Math.PI/2);for(let i=0;i<4;i++){const a=i/4*6.283;const o2=add(new THREE.OctahedronGeometry(1),M(i%2?'#ff7ae0':'#7fffd8',i%2?0xff30c0:0x30ffb0),Math.cos(a)*.55,2.7+(i%2)*.15,Math.sin(a)*.55,.1,.3,.1);}add(GSPH,M('#ffffff',0xffffff),0,2.95,0,.14,.14,.14);}
   else if(h===8){const gd=M('#ffd24a',0x6a4400);add(GCYL,gd,0,2.3,0,.62,.28,.62);for(let i=0;i<7;i++){const a=i/7*6.283;add(GCONE,gd,Math.cos(a)*.5,2.7,Math.sin(a)*.5,.16,.55,.16);add(GSPH,M('#ff6aa8',0xff3080),Math.cos(a)*.5,3.0,Math.sin(a)*.5,.08,.08,.08);}add(GSPH,M('#9affff',0x40e0ff),0,2.8,0,.26,.26,.26);}
   else if(h===9){const cap=M('#b8522a',0x2a0c00),sp=M('#f4ead0');add(GSPH,cap,0,2.42,0,.78,.46,.78);add(GCYL,sp,0,2.28,0,.34,.2,.34);for(let i=0;i<6;i++){const a=i/6*6.283;add(GSPH,sp,Math.cos(a)*.42,2.52+(i%2)*.06,Math.sin(a)*.42,.1,.08,.1);}add(GSPH,M('#8affb0',0x30ff80),0,2.86,0,.12,.12,.12);}
-  if(cp>0){const col=['','#c01830','#ffcf3a','#ffffff','#160a2a','#0affd0','#e8dcc0','#0d1f4a','#ffe9a0','#3f6b34'][cp],em=[0,0x300008,0x553300,0x303030,0x6a2aff,0xff20c0,0x201808,0x1a40d0,0x806010,0x0a3a18][cp];
+  else if(h===10){const bk=M('#06030c',0x1a0820),pk=M('#ff5ad0',0xff40c0);const r=add(new THREE.TorusGeometry(.56,.07,8,28),pk,0,2.5,0,1,1,1,Math.PI/2);r.userData.sp=1;add(GSPH,bk,0,2.6,0,.3,.3,.3);for(let i=0;i<5;i++){const a=i/5*6.283;add(GCONE,bk,Math.cos(a)*.5,2.5,Math.sin(a)*.5,.1,.5,.1);}}
+  if(cp>0){const col=['','#c01830','#ffcf3a','#ffffff','#160a2a','#0affd0','#e8dcc0','#0d1f4a','#ffe9a0','#3f6b34','#08040e'][cp],em=[0,0x300008,0x553300,0x303030,0x6a2aff,0xff20c0,0x201808,0x1a40d0,0x806010,0x0a3a18,0x300a28][cp];
     const mt=M(col,em),m=add(GBOX,mt,0,1.0,-.7,.95,1.5,.06);m.rotation.x=.12;
-    if(cp>=3)m.onBeforeRender=()=>{const t=performance.now()/(cp===5?300:cp>=6?900:1600);if(cp===3){mt.color.setHSL(t%1,.8,.6);mt.emissive.setHSL(t%1,1,.3);}else if(cp===5){mt.emissive.setHSL(.83+.12*Math.sin(t*3),1,.5*(Math.sin(t*7)>.5?1:.4));}else if(cp===7){mt.emissive.setHSL(.6+.05*Math.sin(t*2),1,.22+.1*Math.sin(t*5));}else if(cp===8){mt.emissive.setHSL(.12,.9,.3+.15*Math.sin(t*4));}else if(cp===9){mt.emissive.setHSL(.38,.9,.14+.1*Math.sin(t*3));}};}
+    if(cp>=3)m.onBeforeRender=()=>{const t=performance.now()/(cp===5?300:cp>=6?900:1600);if(cp===3){mt.color.setHSL(t%1,.8,.6);mt.emissive.setHSL(t%1,1,.3);}else if(cp===5){mt.emissive.setHSL(.83+.12*Math.sin(t*3),1,.5*(Math.sin(t*7)>.5?1:.4));}else if(cp===7){mt.emissive.setHSL(.6+.05*Math.sin(t*2),1,.22+.1*Math.sin(t*5));}else if(cp===8){mt.emissive.setHSL(.12,.9,.3+.15*Math.sin(t*4));}else if(cp===9){mt.emissive.setHSL(.38,.9,.14+.1*Math.sin(t*3));}else if(cp===10){mt.emissive.setHSL(.88,.9,.12+.1*Math.sin(t*2.5));}};}
 }
 function makePlayerObj(capCol,shirt){
   const o={g:new THREE.Group(),arms:[],legs:[],walk:0};
@@ -4962,6 +4963,7 @@ function dlgInit(){
 function dlgPortrait(nm){
   const c=dlg.c2;if(!c)return;c.setTransform(2,0,0,2,0,0);c.clearRect(0,0,92,92);dlg.who=nm;
   if(typeof MOR_NAME!=='undefined'&&nm===MOR_NAME)return morPortrait(c);
+  if(typeof KAEL_NAME!=='undefined'&&nm===KAEL_NAME)return kaelPortrait(c);
   const g=c.createRadialGradient(46,46,6,46,46,60);g.addColorStop(0,'#1d4a63');g.addColorStop(1,'#0a1620');c.fillStyle=g;c.fillRect(0,0,92,92);
   c.fillStyle='#244a63';c.beginPath();c.ellipse(46,96,40,28,0,0,6.3);c.fill();
   c.fillStyle='#f2f0ea';c.beginPath();c.moveTo(26,52);c.quadraticCurveTo(46,98,66,52);c.closePath();c.fill();
@@ -5000,7 +5002,7 @@ window.addEventListener('keydown',e=>{
   if(ftOpenFlag){if(e.key==='Escape'||e.key==='e'||e.key==='E'){e.stopImmediatePropagation();e.preventDefault();ftClose();}return;}
   if(dlgOpen){e.stopImmediatePropagation();e.preventDefault();const k=e.key;
     if(k===' '||k==='Enter'||k==='e'||k==='E')dlgAdvance();else if(k==='Escape')dlgClose();else if(/^[1-9]$/.test(k))dlgPick(+k-1);return;}
-  if((e.key==='e'||e.key==='E')&&started){if(npcZone()){e.stopImmediatePropagation();npcTalk();}else if(morZone()){e.stopImmediatePropagation();morTalk();}}
+  if((e.key==='e'||e.key==='E')&&started){if(npcZone()){e.stopImmediatePropagation();npcTalk();}else if(morZone()){e.stopImmediatePropagation();morTalk();}else if(kaelZone()){e.stopImmediatePropagation();kaelTalk();}}
 },true);
 
 /* ---------- Quest-Logik ---------- */
@@ -5129,8 +5131,8 @@ function npcTick(dtr,time){
 }
 
 /* Landschaftsobjekte dürfen nicht in die Nebengänge ragen */
-W2.noObj=(x,z)=>(NPC_ON&&Math.abs(x-NPX)<7.5&&z*NPS>HW-1&&z*NPS<HW+42)||(MERCH_ON&&Math.abs(x-MX)<7.5&&z*S.ms>HW-1&&z*S.ms<HW+42);
-W2.carveX=x0v=>{const t=x=>{const m=((x%960)+960)%960;return m<480?m:960-m;};if(NPC_ON&&x0v===AX[35])return t(NPX);if(MERCH_ON&&x0v===AX[39])return t(MX);return null;};
+W2.noObj=(x,z)=>(NPC_ON&&Math.abs(x-NPX)<7.5&&z*NPS>HW-1&&z*NPS<HW+42)||(MERCH_ON&&Math.abs(x-MX)<7.5&&z*S.ms>HW-1&&z*S.ms<HW+42)||(KAEL_ON&&Math.abs(x-KX)<7.5&&z*KSD>HW-1&&z*KSD<HW+42);
+W2.carveX=x0v=>{const t=x=>{const m=((x%960)+960)%960;return m<480?m:960-m;};if(NPC_ON&&x0v===AX[35])return t(NPX);if(MERCH_ON&&x0v===AX[39])return t(MX);if(KAEL_ON&&x0v===AX[41])return t(KX);return null;};
 
 /* ===== Talismane + Morchel die Pilzsammlerin (Nebengang in Gebiet 14, Pilzwald) ===== */
 const MOR_ON=NAREAS>13,MOR_NAME='Morchel die Pilzsammlerin';
@@ -5139,8 +5141,9 @@ const MOR_NEED=[100,50];                 /* Gewöhnlich, Ungewöhnlich */
 let morIn=false,morAnim=null,morLab=null;
 
 /* ---------- Talismane ---------- */
-const TALIS={spore:{n:'Morchels Sporenlocke',ic:'🍄',d:'Trägst du schon ein Ei und läufst, sammelst du alle Eier in doppelter Reichweite automatisch mit auf.'}};
-function talEquip(id){if(id&&!S.tal.includes(id))return;S.talEq=id||'';save();renderFig();toast(id?TALIS[id].ic+' Talisman angelegt: '+TALIS[id].n:'Talisman abgelegt','good');}
+const TALIS={spore:{n:'Morchels Sporenlocke',ic:'🍄',d:'Trägst du schon ein Ei und läufst, sammelst du alle Eier in doppelter Reichweite automatisch mit auf.'},
+  null:{n:'Kaels Nullkern',ic:'🕳️',d:'Alle deine Haustiere verdienen doppelt so viel (zusätzlich zu allen anderen Boni).'}};
+function talEquip(id){if(id&&!S.tal.includes(id))return;S.talEq=id||'';recalc();save();renderFig();toast(id?TALIS[id].ic+' Talisman angelegt: '+TALIS[id].n:'Talisman abgelegt','good');}
 function giveTal(id){if(!S.tal.includes(id))S.tal.push(id);if(!S.talEq)S.talEq=id;save();}
 function talRow(row){
   if(!S.tal.length)return '';
@@ -5271,7 +5274,7 @@ function morWant(r){
   return 0;
 }
 const morReserve=r=>MOR_ON?Math.min(S.stash[r]|0,morWant(r)):0;
-function eggReserve(r){return (typeof npcReserve==='function'?npcReserve(r):0)+morReserve(r);}
+function eggReserve(r){return (typeof npcReserve==='function'?npcReserve(r):0)+morReserve(r)+(typeof kaelReserve==='function'?kaelReserve(r):0);}
 function morGiveList(){const l=[];for(let r=0;r<2;r++){const n=Math.min(S.stash[r]|0,morWant(r));for(let k=0;k<n;k++)l.push(r);}return l;}
 const morEggsOk=()=>S.mg[0]>=MOR_NEED[0]&&S.mg[1]>=MOR_NEED[1];
 const morPetV=()=>(S.mq|0)===2?2:(S.mq|0)===3?3:0;                /* 2 = Regenbogen, 3 = Leere */
@@ -5346,6 +5349,203 @@ function morTick(dtr,time){
   if(started){const z=morZone();if(z&&!morIn&&!dlgOpen){morIn=true;morTalk();}else if(!z)morIn=false;}
 }
 
+/* ===== Kael Nullmeister, Hüter der Schwelle (Nebengang in Gebiet 42, Singularität) – Tür nur mit 2 Spielern auf Druckplatten ===== */
+const KAEL_ON=NAREAS>41,KAEL_NAME='Kael Nullmeister';
+const KX=KAEL_ON?AX[41]+S.kx:-1e9,KSD=S.ksd||1,KL=36,KZ=KSD*(HW+27);
+const KPZ=KSD*(HW-3.4),KPDX=5.6,KPR=2.1;             /* Druckplatten: Mitte x±KPDX, Radius */
+const KMAXE=38,KPETR=25;                              /* Eier bis Prismatisch (38), Pets bis Omega (25) */
+const KGOLD=1e20;                                     /* 100 Qi */
+const KPETS=SPECIES.map((s,i)=>s.r<=KPETR?i:-1).filter(i=>i>=0);
+let kDoor=null,kPlates=[],kAnim=null,kLab=null,kHold=0,kOpenP=0,kIn=false,kaelDoor=false;
+const KFAKE=[];                                        /* nur für Tests: künstliche Mitspieler [x,z] */
+
+/* ---------- Welt ---------- */
+function kaelPortrait(c){
+  const g=c.createRadialGradient(46,46,6,46,46,60);g.addColorStop(0,'#3a1450');g.addColorStop(1,'#07030c');c.fillStyle=g;c.fillRect(0,0,92,92);
+  c.strokeStyle='rgba(255,90,208,.55)';c.lineWidth=2.5;c.beginPath();c.ellipse(46,40,40,12,-.25,0,6.3);c.stroke();c.beginPath();c.ellipse(46,40,32,8,-.25,0,6.3);c.stroke();
+  c.fillStyle='#100818';c.beginPath();c.moveTo(8,96);c.quadraticCurveTo(14,50,46,12);c.quadraticCurveTo(78,50,84,96);c.closePath();c.fill();
+  c.fillStyle='#000';c.beginPath();c.ellipse(46,46,18,22,0,0,6.3);c.fill();
+  c.fillStyle='#ff5ad0';for(const sx of[-1,1]){c.beginPath();c.ellipse(46+sx*8,43,3.6,2.4,0,0,6.3);c.fill();}
+  c.fillStyle='rgba(255,154,224,.9)';c.beginPath();c.arc(46,16,3,0,6.3);c.fill();
+}
+function buildKaelNiche(A){
+  const s=KSD,x=KX,L=KL,w=8,z0=s*(HW+L/2),M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.8},o||{}));
+  const dm=M(0x120c24,{roughness:.95,emissive:0x07040f}),pink=new THREE.MeshBasicMaterial({color:0xff5ad0}),blk=new THREE.MeshBasicMaterial({color:0x000000});
+  const fl=new THREE.Mesh(GBOX,new THREE.MeshStandardMaterial({color:0x0b0818,roughness:1}));fl.scale.set(w+2.4,.5,L);fl.position.set(x,-.2,z0);fl.receiveShadow=true;scene.add(fl);
+  for(const sx of[-1,1])addBox(1.2,6,L,x+sx*(w/2+.6),3,z0,dm,false);
+  addBox(w+2.4,.8,L,x,6.4,z0,dm,false);
+  const zb=s*(HW+L+.4);addBox(w+2.4,6.8,1.2,x,3.4,zb,dm,false);
+  /* Die Tür: gleiche Optik wie die Außenwand, fährt nach oben */
+  const doorM=new THREE.MeshStandardMaterial({color:dimCol(A.wall,.3),roughness:.85}),glowM=new THREE.MeshBasicMaterial({color:A.glow});
+  const dg=new THREE.Group();dg.position.set(x,0,s*(HW+.6));scene.add(dg);
+  const dbox=new THREE.Mesh(GBOX,doorM);dbox.scale.set(w,5,1.2);dbox.position.y=2.5;dbox.castShadow=true;dg.add(dbox);
+  const dtop=new THREE.Mesh(GBOX,glowM);dtop.scale.set(w,.18,1.3);dtop.position.y=5.1;dg.add(dtop);
+  /* Zwei Siegel in der Tür, die aufleuchten, wenn die Platten besetzt sind */
+  const seals=[-1,1].map(sx=>{const m=new THREE.Mesh(new THREE.TorusGeometry(.8,.09,8,28),new THREE.MeshBasicMaterial({color:0x4a2a60}));m.position.set(sx*2.2,2.6,-s*.65);m.rotation.y=0;dg.add(m);return m;});
+  kDoor={g:dg,seals:seals};
+  /* Druckplatten */
+  for(const sx of[-1,1]){
+    const g=new THREE.Group();g.position.set(x+sx*KPDX,0,KPZ);scene.add(g);
+    const base=new THREE.Mesh(new THREE.CylinderGeometry(KPR+.35,KPR+.5,.25,24),M(0x1c1030,{metalness:.5,roughness:.4}));base.position.y=.12;g.add(base);
+    const pm=new THREE.MeshBasicMaterial({color:0x6a2a88}),pl=new THREE.Mesh(new THREE.CylinderGeometry(KPR,KPR,.22,24),pm);pl.position.y=.3;g.add(pl);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(KPR*.62,.07,6,32),new THREE.MeshBasicMaterial({color:0xff5ad0}));ring.rotation.x=Math.PI/2;ring.position.y=.44;g.add(ring);
+    const dot=new THREE.Mesh(GCYL,pink);dot.scale.set(.18,.08,.18);dot.position.y=.44;g.add(dot);
+    kPlates.push({g:g,pl:pl,pm:pm,ring:ring,x:x+sx*KPDX,on:0,y:0});
+  }
+  const hl=makeLabel(512,170,6.8,2.2);hl.position.set(x,6.6,s*(HW-4.6));scene.add(hl);hl.userData.draw([{t:'ZWEI SPIELER',size:50,col:'#ff9ae0'},{t:'beide Platten gleichzeitig',size:30,col:'#e8d0ff'}]);
+  /* Sterne und Staub im Gang */
+  const stars=[];for(let i=0;i<40;i++){const m=new THREE.Mesh(GSPH,new THREE.MeshBasicMaterial({color:i%3?0xff9ae0:0xffffff,transparent:true,opacity:.8}));m.scale.setScalar(.06+Math.random()*.06);scene.add(m);stars.push({m:m,x:x+(Math.random()-.5)*7,y:.5+Math.random()*5,z:s*(HW+2+Math.random()*(L-4)),ph:Math.random()*6.3});}
+  /* Schwarzes Loch an der Rückwand */
+  const bh=new THREE.Group();bh.position.set(x,4.2,zb-s*1.1);scene.add(bh);
+  const core=new THREE.Mesh(GSPH,blk);core.scale.setScalar(2.1);bh.add(core);
+  const rings=[0,1,2].map(i=>{const r=new THREE.Mesh(new THREE.RingGeometry(2.5+i*.7,3.0+i*.9,48),new THREE.MeshBasicMaterial({color:i%2?0xff5ad0:0xffb0ee,transparent:true,opacity:.6-i*.12,side:THREE.DoubleSide,depthWrite:false}));r.rotation.x=1.2;r.rotation.y=s>0?Math.PI:0;bh.add(r);return r;});
+  const bgl=new THREE.Sprite(new THREE.SpriteMaterial({map:gTex,color:0xff40c0,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,opacity:.5}));bgl.scale.set(15,15,1);bh.add(bgl);
+  /* Bodenmuster: Ereignishorizont */
+  const cc=document.createElement('canvas');cc.width=cc.height=256;{const q=cc.getContext('2d');q.translate(128,128);q.strokeStyle='rgba(255,90,208,.8)';q.lineWidth=3;for(const r of[120,92,64]){q.beginPath();q.arc(0,0,r,0,6.283);q.stroke();}
+    q.fillStyle='rgba(255,154,224,.9)';for(let i=0;i<12;i++){q.save();q.rotate(i/12*6.283);q.fillRect(-2,-120,4,22);q.restore();}}
+  const cm=new THREE.Mesh(new THREE.PlaneGeometry(8,8),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cc),transparent:true,opacity:.8}));cm.rotation.x=-Math.PI/2;cm.position.set(x,.03,KZ);scene.add(cm);
+  /* Die Figur */
+  const g=new THREE.Group();g.position.set(x,0,KZ);g.rotation.y=s>0?Math.PI:0;scene.add(g);
+  const add=(geo,mt,px,py,pz,sx_,sy_,sz_,par)=>{const m=new THREE.Mesh(geo,mt);m.position.set(px,py,pz);if(sx_!==undefined)m.scale.set(sx_,sy_,sz_);m.castShadow=true;(par||g).add(m);return m;};
+  const robe=add(new THREE.ConeGeometry(1.25,4.2,14),M(0x0e0818,{roughness:.6,emissive:0x12061c}),0,2.2,0);
+  const hem=new THREE.Mesh(new THREE.TorusGeometry(1.2,.06,6,30),pink);hem.rotation.x=Math.PI/2;hem.position.y=.12;g.add(hem);
+  add(GSPH,M(0x140a20),0,3.6,0,1.0,.6,.8);
+  const hood=add(new THREE.ConeGeometry(.75,1.5,12),M(0x0e0818,{roughness:.6}),0,4.55,-.05);
+  add(GSPH,blk,0,4.25,.28,.46,.52,.34);
+  for(const sx of[-1,1])add(GSPH,pink,sx*.17,4.3,.52,.1,.06,.05);
+  const armL=add(GCYL,M(0x0e0818),-1.0,3.1,.35,.3,1.4,.3);armL.rotation.set(.9,0,.5);
+  const armR=add(GCYL,M(0x0e0818),1.05,3.1,.25,.3,1.5,.3);armR.rotation.set(.5,0,-.4);
+  /* Nullkern in der Hand */
+  const orb=new THREE.Group();orb.position.set(-.8,2.9,1.2);g.add(orb);
+  const oc=new THREE.Mesh(GSPH,blk);oc.scale.setScalar(.38);orb.add(oc);
+  const orr=[0,1].map(i=>{const r=new THREE.Mesh(new THREE.TorusGeometry(.55+i*.14,.03,6,30),pink);r.rotation.x=Math.PI/2.2;orb.add(r);return r;});
+  /* Akkretionsring hinter dem Rücken */
+  const halo=new THREE.Group();halo.position.set(0,3.9,-.6);g.add(halo);
+  const hr=[0,1,2].map(i=>{const r=new THREE.Mesh(new THREE.TorusGeometry(2.3+i*.35,.05,6,56),new THREE.MeshBasicMaterial({color:i%2?0xff5ad0:0xffb0ee,transparent:true,opacity:.8-i*.15}));r.rotation.x=1.2+i*.1;halo.add(r);return r;});
+  const gl=new THREE.Sprite(new THREE.SpriteMaterial({map:gTex,color:0xff40c0,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,opacity:.4}));gl.scale.set(9,9,1);gl.position.set(0,3.6,0);g.add(gl);
+  const lab=makeLabel(512,170,7.2,2.4);lab.position.set(x,8.0,KZ);scene.add(lab);lab.userData.draw([{t:'KAEL NULLMEISTER',size:46,col:'#ff9ae0'},{t:'Hüter der Schwelle',size:32,col:'#e8d0ff'}]);kLab=lab;
+  kAnim={g:g,robe:robe,orb:orb,orr:orr,halo:halo,hr:hr,gl:gl,rings:rings,bgl:bgl,bh:bh,stars:stars};
+}
+function kaelAnimate(dt,time){
+  const a=kAnim;if(!a)return;
+  a.hr.forEach((r,i)=>{r.rotation.z+=dt*(.5+i*.25);});a.orr.forEach((r,i)=>{r.rotation.z+=dt*(2+i);});
+  a.orb.position.y=2.9+Math.sin(time*1.7)*.12;a.robe.scale.y=1+Math.sin(time*1.2)*.012;a.gl.material.opacity=.34+Math.sin(time*2)*.1;
+  a.g.rotation.y=(KSD>0?Math.PI:0)+Math.sin(time*.4)*.08;
+  a.rings.forEach((r,i)=>{r.rotation.z+=dt*(.35+i*.2)*(i%2?-1:1);});a.bgl.material.opacity=.42+Math.sin(time*1.5)*.1;
+  for(const q of a.stars){q.m.position.set(q.x+Math.sin(time*.5+q.ph)*.4,q.y+Math.sin(time*.8+q.ph)*.3,q.z);q.m.material.opacity=.5+.4*Math.sin(time*2+q.ph);}
+}
+
+/* ---------- Druckplatten & Tür ---------- */
+const kFakeAt=px=>KFAKE.some(f=>Math.hypot(f[0]-px,f[1]-KPZ)<KPR);
+function kOcc(px){
+  if(Math.hypot(P.x-px,P.z-KPZ)<KPR)return 1;
+  if(kFakeAt(px))return 1;
+  for(const o of remotes.values())if(o.have&&o.slot!==-2&&Math.hypot(o.x-px,o.z-KPZ)<KPR)return 1;
+  return 0;
+}
+function kRemoteInside(){
+  for(const f of KFAKE)if(f[1]*KSD>HW+.5&&Math.abs(f[0]-KX)<5)return true;
+  for(const o of remotes.values())if(o.have&&o.slot!==-2&&o.z*KSD>HW+.5&&Math.abs(o.x-KX)<5)return true;
+  return false;
+}
+function kaelHint(){
+  if(!KAEL_ON||kaelDoor||Math.abs(P.x-KX)>14||P.z*KSD<HW-9)return '';
+  if(kPlates.length&&kPlates.some(p=>p.on))return 'Zwei Spieler müssen gleichzeitig auf beiden Platten stehen.';
+  return '';
+}
+function kaelDoorTick(dt,time){
+  if(!kDoor)return;
+  const oa=kOcc(KX-KPDX),ob=kOcc(KX+KPDX);
+  kPlates[0].on=oa;kPlates[1].on=ob;
+  const inside=(P.z*KSD>HW+.5&&Math.abs(P.x-KX)<5)||kRemoteInside();
+  if(oa&&ob){if(kHold<=0)beep(330,.4,'sine',.08,1.8);kHold=12;}
+  else if(inside)kHold=Math.max(kHold,4);
+  else kHold=Math.max(0,kHold-dt);
+  const open=kHold>0;
+  kOpenP+=(open?1:-1)*dt*.5;kOpenP=Math.max(0,Math.min(1,kOpenP));
+  kDoor.g.position.y=kOpenP*6.4;kaelDoor=kOpenP>.85;
+  kDoor.seals.forEach((m,i)=>{const on=i?ob:oa;m.material.color.setHex(open?0xff9ae0:on?0xff5ad0:0x4a2a60);m.scale.setScalar(1+(on?.12*Math.sin(time*8):0));});
+  kPlates.forEach(p=>{const ty=p.on?-.18:0;p.y+=(ty-p.y)*Math.min(1,dt*10);p.pl.position.y=.3+p.y;p.ring.position.y=.44+p.y;p.pm.color.setHex(p.on?0xff5ad0:0x6a2a88);});
+}
+
+/* ---------- Quest-Logik ---------- */
+const kaelZone=()=>KAEL_ON&&Math.abs(P.x-KX)<4.6&&P.z*KSD>HW+9;
+const kEggWant=r=>(KAEL_ON&&S.kmet&&r<=KMAXE&&!S.kegg[r]&&(S.kq|0)<5)?1:0;
+const kaelReserve=r=>Math.min(S.stash[r]|0,kEggWant(r));
+function kEggList(){const l=[];for(let r=0;r<=KMAXE;r++)if(kEggWant(r)&&(S.stash[r]|0)>0)l.push(r);return l;}
+const kEggsDone=()=>{for(let r=0;r<=KMAXE;r++)if(!S.kegg[r])return false;return true;};
+const kEggsHave=()=>S.kegg.slice(0,KMAXE+1).filter(Boolean).length;
+const kPetsDone=()=>KPETS.every(s=>S.kpet[s]);
+const kPetsHave=()=>KPETS.filter(s=>S.kpet[s]).length;
+function kPetPlan(){const l=[];if((S.kq|0)>=5||!S.kmet)return l;for(const s of KPETS){if(S.kpet[s])continue;let b=null;for(const p of S.pets)if(p.sp===s&&p.v===1&&(!b||p.mps<b.mps))b=p;if(b)l.push(b);}return l;}
+const kIdxDone=()=>S.dex.every(Boolean);
+const kAllOk=()=>kEggsDone()&&kPetsDone()&&kIdxDone();
+function kStatusPages(){
+  if((S.kq|0)>=5)return ['Alles ist getan. Der Nullkern gehört dir – und die Schwelle steht dir offen, wann immer du sie mit einem Freund betrittst.'];
+  const mp=KPETS.filter(s=>!S.kpet[s]),sh=mp.slice(0,6).map(s=>SPECIES[s].name).join(', ')+(mp.length>6?' … und '+(mp.length-6)+' weitere':'');
+  return ['Mein Katalog der Welt:\n• Eier (Gewöhnlich bis Prismatisch): '+kEggsHave()+' / '+(KMAXE+1)+'\n• Glanz-Haustiere (alle Arten bis Omega): '+kPetsHave()+' / '+KPETS.length+'\n• Pet-Index (ohne Mutationen): '+S.dex.filter(Boolean).length+' / '+S.dex.length+'\n• Gold: $'+fmt(S.money)+' / $'+fmt(KGOLD)+' (100 Qi)',
+    'Von jeder Seltenheit brauche ich EIN Ei, aus deinem Lager. Von jeder Art einen Glanz-Schleimi und seine Verwandten – gib mir davon jeweils den schwächsten. Der Index muss vollständig sein; den prüfe ich nur, den behältst du.'+(mp.length?'\n\nNoch ohne Glanz-Abgabe: '+sh+'.':'')];
+}
+function kaelDeliverEggs(){
+  const l=kEggList();if(!l.length)return false;
+  for(const r of l){S.stash[r]--;S.kegg[r]=1;}save();
+  beep(300,.2,'triangle',.08,1.4);setTimeout(()=>beep(450,.3,'triangle',.08,1.8),160);
+  burstFx(KX,2.5,KZ,0xff5ad0,40,7,6,1);ring(KX,.1,KZ,0xffb0ee,5,.8);
+  const left=KMAXE+1-kEggsHave();
+  dlgSay([pick(['Hm. Ein Ei von jeder Sorte, die du mir gibst, verschwindet in meinem Katalog. '+l.length+' neu.','Gut. '+l.length+' Seltenheit'+(l.length>1?'en':'')+' mehr. Die Leere merkt sich jede.'])+(left?'\n\nNoch '+left+' fehlen.':'\n\nDie Eier-Reihe ist vollständig.')],[{t:'Weiter',fn:kaelHub}],KAEL_NAME);return true;
+}
+function kaelPetConfirm(){
+  const l=kPetPlan();if(!l.length){dlgSay(['Du hast keine Glanz-Haustiere, die mir noch fehlen.'],[{t:'Zurück',fn:kaelHub}],KAEL_NAME);return;}
+  const eq=l.filter(p=>S.equipped.includes(p.id)).length;
+  dlgSay(['Ich nehme '+l.length+' Glanz-Haustier'+(l.length>1?'e':'')+' (jeweils das schwächste je Art).'+(eq?'\n'+eq+' davon sind gerade im Team.':'')+'\n\nDas ist endgültig.'],[{t:'Ja, nimm sie.',fn:kaelPetGive},{t:'Doch nicht.',fn:kaelHub}],KAEL_NAME);
+}
+function kaelPetGive(){
+  const l=kPetPlan();if(!l.length){kaelHub();return;}
+  const ids=new Set(l.map(p=>p.id));for(const p of l)S.kpet[p.sp]=1;
+  S.pets=S.pets.filter(p=>!ids.has(p.id));S.equipped=S.equipped.filter(id=>!ids.has(id));
+  recalc();try{rebuildPets();}catch(e){}netDirty.pt=1;save();
+  burstFx(KX,2.5,KZ,0xffd070,60,8,6,1.1);ring(KX,.1,KZ,0xff5ad0,6,.9);beep(520,.25,'triangle',.09,1.5);setTimeout(()=>beep(780,.3,'triangle',.09,1.9),170);
+  const left=KPETS.length-kPetsHave();
+  dlgSay(['Glanz, wie Licht an der Kante eines Ereignishorizonts. '+l.length+' Haustier'+(l.length>1?'e':'')+' in meinem Katalog.'+(left?'\n\nNoch '+left+' Arten ohne Glanz-Abgabe.':'\n\nAlle Arten bis Omega sind vollständig.')],[{t:'Weiter',fn:kaelHub}],KAEL_NAME);
+}
+function kaelPay(){
+  if((S.kq|0)>=5)return kaelHub();
+  if(!kAllOk()){dlgSay(['Der Katalog ist noch nicht vollständig. Schau in meinen Auftrag.'],[{t:'Zurück',fn:kaelHub}],KAEL_NAME);return;}
+  if(S.money<KGOLD){dlgSay(['Dir fehlen noch $'+fmt(KGOLD-S.money)+'. Ein Stück Singularität ist nicht billig.'],[{t:'Zurück',fn:kaelHub}],KAEL_NAME);return;}
+  S.money-=KGOLD;S.kq=5;giveTal('null');recalc();netDirty.cs=1;save();
+  flashScreen(0xff9ae0,.9);addShake(.5);beep(196,.8,'sawtooth',.08,.6);setTimeout(()=>beep(294,.6,'triangle',.1,1.6),300);setTimeout(()=>beep(392,.9,'triangle',.1,2),620);
+  burstFx(KX,3,KZ,0xff5ad0,110,10,7,1.4);ring(KX,.1,KZ,0xffffff,9,1.1);
+  toast('🕳️ Talisman erhalten: Kaels Nullkern!','good');toast('Neu: Nullkrone & Ereignismantel (Figur)','good');
+  dlgSay(['… Es ist vollbracht. Der Nullkern gehört dir.','Er lässt alle deine Haustiere doppelt so viel verdienen – zusätzlich zu allem, was du schon hast. Leg ihn im Figur-Menü an. Es ist immer nur ein Talisman gleichzeitig möglich.','Dazu die Nullkrone und der Ereignismantel. Du trägst jetzt ein Stück der Schwelle. Geh vorsichtig damit um.'],[{t:'Danke, Kael.',fn:kaelHub}],KAEL_NAME);
+}
+function kaelHub(){
+  const done=(S.kq|0)>=5,ch=[];
+  ch.push({t:done?'Wie steht es um den Nullkern?':'Auftrag & Fortschritt',fn:()=>dlgSay(kStatusPages(),[{t:'Zurück',fn:kaelHub}],KAEL_NAME)});
+  if(!done){
+    const el=kEggList();ch.push({t:el.length?'Eier aus dem Lager abgeben ('+el.length+' neu)':'Eier aus dem Lager abgeben',dis:!el.length,fn:kaelDeliverEggs});
+    const pl=kPetPlan();ch.push({t:pl.length?'Glanz-Haustiere übergeben ('+pl.length+' neu)':'Glanz-Haustiere übergeben',dis:!pl.length,fn:kaelPetConfirm});
+    ch.push({t:'Nullkern schmieden ($'+fmt(KGOLD)+')',dis:!kAllOk()||S.money<KGOLD,fn:kaelPay});
+  }
+  ch.push({t:'Was bekomme ich dafür?',fn:()=>dlgSay(['Den Nullkern: einen Talisman, der das Einkommen aller deiner Haustiere verdoppelt. Dazu die Nullkrone und den Ereignismantel.'],[{t:'Zurück',fn:kaelHub}],KAEL_NAME)});
+  ch.push({t:'Wer bist du eigentlich?',fn:()=>dlgSay(['Kael. Ich war der Erste, der den Rand der Welt sah. Man nennt mich den Nullmeister – weil ich dort bin, wo alle Rechnungen auf null gehen.','Die Tür zu meinem Gang öffnet sich nur, wenn zwei auf den Platten stehen. Die Leere teilt man, oder man betritt sie nicht.'],[{t:'Zurück',fn:kaelHub}],KAEL_NAME)});
+  ch.push({t:'Tschüss, Kael.',fn:()=>dlgSay([done?'Möge dein Weg immer bei null beginnen. Und bei einem Freund.':'Der Katalog wartet. Er ist geduldig.'],[{t:'Bis bald.',fn:dlgClose}],KAEL_NAME)});
+  dlgSay([done?'Der Träger des Nullkerns. Du erhellst meinen Gang.':pick(['Zwei sind gekommen. Das ist selten.','Schritte in der Leere. Ich habe sie gezählt.','Der Katalog zeigt noch Lücken. Aber du bist hier.'])],ch,KAEL_NAME);
+}
+function kaelTalk(){
+  if(dlgOpen)return;
+  if(!S.kmet){
+    S.kmet=1;save();
+    dlgSay(['… Zwei Schritte auf den Platten. Zwei Atemzüge. Die Tür hat dich eingelassen.','Kael Nullmeister. Hüter der Schwelle. Ich sammle, was die Welt ausmacht, und forge daraus einen Nullkern.','Dafür brauche ich: ein Ei von jeder Seltenheit bis Prismatisch. Einen Glanz-Schleimi und alle seine Verwandten bis Omega – von jeder Art einen. Dein Pet-Index muss vollständig sein. Und 100 Qi.','Der Nullkern verdoppelt das Einkommen deiner Haustiere. Dazu gibt es Krone und Mantel.'],
+      [{t:'Das schaffe ich.',fn:kaelHub},{t:'Warum zwei Spieler?',fn:()=>dlgSay(['Die Schwelle öffnet sich nur für zwei, die gleichzeitig stehen. Niemand kommt allein an den Rand der Welt.'],[{t:'Verstanden.',fn:kaelHub}],KAEL_NAME)},{t:'Später.',fn:dlgClose}],KAEL_NAME);
+  }else kaelHub();
+}
+function kaelTick(dtr,time){
+  if(!KAEL_ON)return;
+  if(kAnim)kaelAnimate(dtr,time);
+  if(started)kaelDoorTick(dtr,time);
+  if(started){const z=kaelZone();if(z&&!kIn&&!dlgOpen){kIn=true;kaelTalk();}else if(!z)kIn=false;}
+}
+
 
 /* ---------- Update ---------- */
 function fenceCollide(){
@@ -5373,6 +5573,7 @@ function updatePlayer(dt){
     if(Math.abs(P.z)>HW-.9&&P.x>-.6)P.x=-.6;fenceCollide();}
   else if(NPC_ON&&npcOpen()&&Math.abs(P.x-NPX)<3.3+(P.z*NPS>HW-.9?0:.01)){const sg=NPS,lim=HW+35.2;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,NPX-3.3,NPX+3.3);}
   else if(MOR_ON&&Math.abs(P.x-MRX)<3.3+(P.z*MRS>HW-.9?0:.01)){const sg=MRS,lim=HW+MRL-.8;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,MRX-3.3,MRX+3.3);}
+  else if(KAEL_ON&&Math.abs(P.x-KX)<3.3+(P.z*KSD>HW-.9?0:.01)&&(kaelDoor||P.z*KSD>HW+.2)){const sg=KSD,lim=HW+35.2;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,KX-3.3,KX+3.3);}
   else if(MERCH_ON&&Math.abs(P.x-MX)<3.3+(P.z*S.ms>HW-.9?0:.01)){const sg=S.ms,lim=HW+35.2;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,MX-3.3,MX+3.3);}
   else P.z=clamp(P.z,-HW+.9,HW-.9);
   const spd=Math.hypot(P.vx,P.vz);P.spd=spd;
@@ -5401,7 +5602,7 @@ function updateEggs(dt){
   }
 }
 function inSafe(){if(P.x<0)return true;return NAREAS>36&&P.x>=AX[36]&&P.x<AX[36]+SAFE2;}
-function checkPlot(){if(inSafe()){if(carried.length)secure();else if(mobs.length)despawnMobs(true);}else if(mobs.length&&!carried.length&&((NPC_ON&&npcZone())||morZone()))despawnMobs(true);}
+function checkPlot(){if(inSafe()){if(carried.length)secure();else if(mobs.length)despawnMobs(true);}else if(mobs.length&&!carried.length&&((NPC_ON&&npcZone())||morZone()||kaelZone()))despawnMobs(true);}
 let time=0;
 function updateVisuals(dt){if(window.MH_TEST){if(S.money<1e30)S.money=1e30;if(!S.merch)S.merch=1;}dtGlobal=dt;updateEnv(time,dt);updateShopsVis(dt,time);updateShopLabels();tickHold(dt);
   eggs.forEach((e,i)=>{
@@ -5473,6 +5674,7 @@ function updateHUD(){
   if(rpn>=0){hint=IS_TOUCH?'Tippe auf „Öffnen“':'E drücken: '+RAR[S.pads[rpn].r].name+' öffnen';}
   else if(useT){hint=useT.hint;}
   else if(nearEgg>=0){const e=eggs[nearEgg];hint=carried.length<cap()?(IS_TOUCH?'Tippe auf „Aufheben“':'E drücken: '+(e.merch?'den Händler':RAR[e.r].name)+' aufheben'):'Tasche voll';}
+  else if(kaelHint())hint=kaelHint();
   else if(mobs.length)hint='Lauf zurück zum Plot!';
   else if(tot>0&&S.pads.slice(0,padN()).some(p=>!p))hint='Stell dich auf einen freien Brutkasten, um ein Ei einzusetzen.';
   else if(ai<0&&carried.length===0&&tot===0&&!S.pads.some(p=>p)&&S.pets.length>0)hint='Geh durch das Tor und sammle neue Eier.';
@@ -5506,7 +5708,7 @@ function renderFig(){
   const row=(t,items)=>'<div><div style="font:400 14px var(--display);margin-bottom:6px;opacity:.85">'+t+'</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+items+'</div></div>';
   const sw=(k)=>COLS.map((col,i)=>'<button class="btn" data-cs="'+k+':'+i+'" style="width:38px;height:38px;padding:0;background:'+col+';'+(c[k]===i?'outline:3px solid var(--gold)':'')+'" aria-label="Farbe '+(i+1)+'"></button>').join('');
   h+=row('Mütze',sw(0))+row('Shirt',sw(1));
-  h+=row('Kopfschmuck',HATS.map((n,i)=>{const ok=i===9?(S.mq|0)>=4:i>=6?(S.plv|0)>=i-5:nd>=HATN[i];return '<button class="btn" '+(ok?'data-cs="2:'+i+'"':'disabled style="opacity:.45"')+(c[2]===i&&ok?' style="outline:3px solid var(--gold)"':'')+'>'+n+(ok?'':' · '+(i===9?'Morchels Quest abschließen':i>=6?'Plot-Vermessung '+(i-5):HATN[i]+' Haustiere im Index'))+'</button>';}).join(''));
+  h+=row('Kopfschmuck',HATS.map((n,i)=>{const ok=i===10?(S.kq|0)>=5:i===9?(S.mq|0)>=4:i>=6?(S.plv|0)>=i-5:nd>=HATN[i];return '<button class="btn" '+(ok?'data-cs="2:'+i+'"':'disabled style="opacity:.45"')+(c[2]===i&&ok?' style="outline:3px solid var(--gold)"':'')+'>'+n+(ok?'':' · '+(i===10?'Kaels Quest abschließen':i===9?'Morchels Quest abschließen':i>=6?'Plot-Vermessung '+(i-5):HATN[i]+' Haustiere im Index'))+'</button>';}).join(''));
   h+=row('Umhang',CAPES.map((n,i)=>{const ok=capeOk(i);return '<button class="btn" '+(ok?'data-cs="3:'+i+'"':'disabled style="opacity:.45"')+(c[3]===i&&ok?' style="outline:3px solid var(--gold)"':'')+'>'+n+(ok?'':' · '+capeHint(i))+'</button>';}).join(''));
   h+=talRow(row);
   const pc=myPlot();
@@ -5706,7 +5908,7 @@ function applyRemote(id,st){
   if(k('pd')!==JSON.stringify(prev.pd)&&Array.isArray(st.pd)){
     const now=Date.now();o.padD=st.pd.slice(0,PADS_N).map(q=>Array.isArray(q)&&RAR[q[0]]?{r:q[0],end:now+q[1]*1000,tot:q[2]||RAR[q[0]].hatch}:null);while(o.padD.length<PADS_N)o.padD.push(null);}
   if(o.slot>=0&&o.slot!==mySlot)applyPlot(o.slot,Array.isArray(st.pl)?st.pl:null);
-  if(k('cs')!==JSON.stringify(prev.cs)&&Array.isArray(st.cs)){applyCos(o.pl,st.cs.slice(0,4).map(x=>Math.max(0,Math.min(9,x|0))));}
+  if(k('cs')!==JSON.stringify(prev.cs)&&Array.isArray(st.cs)){applyCos(o.pl,st.cs.slice(0,4).map(x=>Math.max(0,Math.min(12,x|0))));}
   if(k('mb')!==JSON.stringify(prev.mb)){syncRemoteMobs(o,Array.isArray(st.mb)?st.mb:[]);}
   o.pl.g.visible=o.have&&o.slot!==-2;o.cg.visible=o.pl.g.visible;
 }
@@ -5880,7 +6082,7 @@ function frame(now){
   const dt=dtr*timeScale;time+=dt;
   if(started&&!dlgOpen){updatePlayer(dt);checkPlot();updateMobs(dt,time);fxTick(dt);}
   else if(!started){P.vx=P.vz=0;P.spd=0;}
-  updateEggs(dt);npcTick(dtr,time);morTick(dtr,time);talTick(dtr);
+  updateEggs(dt);npcTick(dtr,time);morTick(dtr,time);kaelTick(dtr,time);talTick(dtr);
   if(started){S.money+=incomeVal*dtr;updatePads();saveT+=dtr;if(saveT>5){saveT=0;save();}}
   updateVisuals(dt);updateRemotes(dt,dtr);netTick(dtr);updatePops(dt);updateParticles(dt);updateRingsBeams(dt);updateCamera(dtr);updateHUD();
   if(!$('mUp').hidden){cache.upT=(cache.upT||0)+dtr;if(cache.upT>.5){cache.upT=0;renderUp();}}
