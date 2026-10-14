@@ -5274,14 +5274,14 @@ const morReserve=r=>MOR_ON?Math.min(S.stash[r]|0,morWant(r)):0;
 function eggReserve(r){return (typeof npcReserve==='function'?npcReserve(r):0)+morReserve(r);}
 function morGiveList(){const l=[];for(let r=0;r<2;r++){const n=Math.min(S.stash[r]|0,morWant(r));for(let k=0;k<n;k++)l.push(r);}return l;}
 const morEggsOk=()=>S.mg[0]>=MOR_NEED[0]&&S.mg[1]>=MOR_NEED[1];
-const morPetV=()=>(S.mq|0)===2?2:(S.mq|0)===3?1:0;                /* 2 = Regenbogen, 1 = Glanz */
+const morPetV=()=>(S.mq|0)===2?2:(S.mq|0)===3?3:0;                /* 2 = Regenbogen, 3 = Leere */
 function morPetCand(){const v=morPetV();if(!v)return null;let b=null;for(const p of S.pets)if(p.sp===0&&p.v===v&&(!b||p.mps<b.mps))b=p;return b;}
 function morStatusPages(){
   const q=S.mq|0;
   if(q>=4)return ['Du hast alles getan, was ich verlangt habe, Läufer. Die Sporenmutter strahlt – und ich muss nicht mehr nachts im Wald schlafen.'];
   if(q===1)return ['Erster Schritt – der Nährboden:\n• '+RAR[0].name+': '+S.mg[0]+' / '+MOR_NEED[0]+'\n• '+RAR[1].name+': '+S.mg[1]+' / '+MOR_NEED[1],'Bring die Eier erst ganz zurück in dein Lager. Von dort gibst du sie mir einfach ab – dann hängt dir kein Hüter am Rock.'];
   if(q===2)return ['Zweiter Schritt – die Farben:\nEin Regenbogen-Schleimi. Nicht irgendeiner aus dem Bilderbuch, sondern deiner. Ich nehme den schwächsten, den du hast – der Rest bleibt bei dir.','Das Tierchen wird Teil der Sporenmutter. Es wird ihr gut gehen, versprochen.'];
-  return ['Dritter und letzter Schritt – das Licht:\nEin Glanz-Schleimi. Er soll der Sporenmutter den Weg leuchten, damit sie wieder wächst.','Auch hier nehme ich den schwächsten, den du hast.'];
+  return ['Dritter und letzter Schritt – die Leere:\nEin Leere-Schleimi. Er trägt die tiefe Stille in sich, in der die Sporenmutter ruhen und wieder wachsen kann.','Auch hier nehme ich den schwächsten, den du hast.'];
 }
 function morDeliver(){
   const got=morGiveList();if(!got.length)return false;
@@ -5308,7 +5308,7 @@ function morPetGive(){
   S.mq=(S.mq|0)+1;save();
   burstFx(MRX,2.5,MRZ,v===2?0xff7ae0:0xffe070,60,8,6,1.1);ring(MRX,.1,MRZ,0x8affb0,6,.9);beep(520,.25,'triangle',.09,1.5);setTimeout(()=>beep(780,.3,'triangle',.09,1.9),170);
   if(S.mq===3){
-    dlgSay(['Schau, wie er funkelt! Alle Farben auf einmal … Die Sporenmutter öffnet sich.','Fast geschafft. Jetzt braucht sie noch Licht, damit der Wald sie wiederfindet. Bring mir einen GLANZ-SCHLEIMI.'],[{t:'Weiter',fn:morHub}],MOR_NAME);
+    dlgSay(['Schau, wie er funkelt! Alle Farben auf einmal … Die Sporenmutter öffnet sich.','Fast geschafft. Jetzt braucht sie noch Stille, damit sie in Ruhe wachsen kann. Bring mir einen LEERE-SCHLEIMI.'],[{t:'Weiter',fn:morHub}],MOR_NAME);
   }else{
     morFinish();
   }
@@ -5319,7 +5319,7 @@ function morFinish(){
   burstFx(MRX,2.5,MRZ,0x8affb0,90,9,7,1.3);ring(MRX,.1,MRZ,0xf4ead0,8,1);
   toast('🍄 Talisman erhalten: Morchels Sporenlocke!','good');toast('Neu: Morchelhut & Sporenmantel (Figur)','good');
   netDirty.cs=1;
-  dlgSay(['Da! Siehst du das Licht? Die ganze Höhle atmet wieder.','Als Dank bekommst du meine Sporenlocke. Ein Talisman – trägst du schon ein Ei und läufst, ziehen dich alle Eier in der Nähe von selbst an, doppelt so weit wie sonst. Leg sie im Figur-Menü an.','Und für dein Aussehen: einen Morchelhut und einen Sporenmantel. Trag sie mit Stolz. Sie sind ein bisschen feucht.'],[{t:'Danke, Morchel!',fn:morHub}],MOR_NAME);
+  dlgSay(['Da! Spürst du die Ruhe? Die ganze Höhle atmet wieder.','Als Dank bekommst du meine Sporenlocke. Ein Talisman – trägst du schon ein Ei und läufst, ziehen dich alle Eier in der Nähe von selbst an, doppelt so weit wie sonst. Leg sie im Figur-Menü an.','Und für dein Aussehen: einen Morchelhut und einen Sporenmantel. Trag sie mit Stolz. Sie sind ein bisschen feucht.'],[{t:'Danke, Morchel!',fn:morHub}],MOR_NAME);
 }
 function morHub(){
   const q=S.mq|0,ch=[];
@@ -5327,7 +5327,7 @@ function morHub(){
   if(q===1){const gl=morGiveList();ch.push({t:gl.length?'Eier aus dem Lager abgeben ('+gl.length+' passend)':'Eier aus dem Lager abgeben',dis:!gl.length,fn:morDeliver});}
   if(q===2||q===3){const p=morPetCand();ch.push({t:'Haustier übergeben: '+VARN[morPetV()]+'-Schleimi'+(p?'':' (keinen)'),dis:!p,fn:morPetConfirm});}
   ch.push({t:'Was bekomme ich dafür?',fn:()=>dlgSay(['Drei Dinge: meine Sporenlocke (ein Talisman, der Eier in doppelter Reichweite aufsammelt, sobald du eines trägst und läufst), einen Morchelhut und einen Sporenmantel.'],[{t:'Zurück',fn:morHub}],MOR_NAME)});
-  ch.push({t:'Wer bist du eigentlich?',fn:()=>dlgSay(['Morchel. Ich sammle Pilze, seit der Wald noch ein Fleck war. Dieser Gang führt zur Sporenmutter – dem ältesten Pilz im Pilzwald.','Sie wird schwächer. Seit die Eier immer seltener auf den alten Wegen liegen, fehlt ihr der Nährboden. Und die Farbe. Und das Licht.'],[{t:'Zurück',fn:morHub}],MOR_NAME)});
+  ch.push({t:'Wer bist du eigentlich?',fn:()=>dlgSay(['Morchel. Ich sammle Pilze, seit der Wald noch ein Fleck war. Dieser Gang führt zur Sporenmutter – dem ältesten Pilz im Pilzwald.','Sie wird schwächer. Seit die Eier immer seltener auf den alten Wegen liegen, fehlt ihr der Nährboden. Und die Farbe. Und die Stille.'],[{t:'Zurück',fn:morHub}],MOR_NAME)});
   ch.push({t:'Tschüss, Morchel.',fn:()=>dlgSay([q>=4?'Komm vorbei, wenn du Pilze brauchst. Oder Gesellschaft.':'Lauf vorsichtig. Und lass die Hüter nicht an deinen Stiefeln schnüffeln.'],[{t:'Bis bald.',fn:dlgClose}],MOR_NAME)});
   const greet=q>=4?'Da ist ja mein Lieblingsläufer! Die Sporenmutter hat nach dir gefragt.':pick(['Oh, du schon wieder! Wie schön. Komm, setz dich nicht, ich habe zu tun.','Ich rieche Eierschale. Gute Wahl, hierher zu kommen.','Pssst. Nicht so laut. Die Sporen schlafen.']);
   dlgSay([greet],ch,MOR_NAME);
@@ -5336,7 +5336,7 @@ function morTalk(){
   if(dlgOpen)return;
   if(!S.mmet){
     S.mmet=1;S.mq=1;save();
-    dlgSay(['Pssst! Nicht so laut. Du trampelst über meine Sporen.','Morchel. Pilzsammlerin. Und das da hinten ist die Sporenmutter, der älteste Pilz im Pilzwald. Sie stirbt. Langsam, aber sicher.','Ich kann sie retten – mit deiner Hilfe. Sie braucht erst Nährboden: 100 '+RAR[0].name+'e Eier und 50 '+RAR[1].name+'e. Danach Farbe, ein Regenbogen-Schleimi. Und zuletzt Licht, ein Glanz-Schleimi.','Zur Belohnung gebe ich dir etwas von mir: meine Sporenlocke, einen Hut und einen Mantel. Na?'],
+    dlgSay(['Pssst! Nicht so laut. Du trampelst über meine Sporen.','Morchel. Pilzsammlerin. Und das da hinten ist die Sporenmutter, der älteste Pilz im Pilzwald. Sie stirbt. Langsam, aber sicher.','Ich kann sie retten – mit deiner Hilfe. Sie braucht erst Nährboden: 100 '+RAR[0].name+'e Eier und 50 '+RAR[1].name+'e. Danach Farbe, ein Regenbogen-Schleimi. Und zuletzt Stille, ein Leere-Schleimi.','Zur Belohnung gebe ich dir etwas von mir: meine Sporenlocke, einen Hut und einen Mantel. Na?'],
       [{t:'Das mache ich.',fn:morHub},{t:'Warum Eier?',fn:()=>dlgSay(['Pilze lieben Schale. Das Kalzium! Und was in den Eiern steckt, kriecht in den Boden und macht die Sporen kräftig. Je mehr, desto besser.'],[{t:'Alles klar.',fn:morHub}],MOR_NAME)},{t:'Später.',fn:dlgClose}],MOR_NAME);
   }else morHub();
 }
