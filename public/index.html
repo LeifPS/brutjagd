@@ -5570,13 +5570,13 @@ function updatePlayer(dt){
   const ctl={ix:ix,iy:iy,sp:speedEff()};{const fxI=AREAFX[areaIdx(P.x)];if(fxI&&fxI.input)fxI.input(ctl,dt,FXAPI);}
   ix=ctl.ix;iy=ctl.iy;
   const sp=ctl.sp,tx=(fx*iy+rx*ix)*sp,tz=(fz*iy+rz*ix)*sp,k=1-Math.exp(-14*dt);
-  const ox0=P.x;P.vx+=(tx-P.vx)*k;P.vz+=(tz-P.vz)*k;P.x+=P.vx*dt;P.z+=P.vz*dt;
+  const ox0=P.x,oz0=P.z;P.vx+=(tx-P.vx)*k;P.vz+=(tz-P.vz)*k;P.x+=P.vx*dt;P.z+=P.vz*dt;
   if(ox0<W1END)P.x=Math.min(P.x,W1END-1.2);else P.x=clamp(P.x,AX[36]+1.5,END-1.2);
   if(P.x<.6){const dd=Math.hypot(P.x,P.z),lim=LOBBY_RH-1.4;if(P.x<0&&dd>lim){P.x*=lim/dd;P.z*=lim/dd;}
     if(Math.abs(P.z)>HW-.9&&P.x>-.6)P.x=-.6;fenceCollide();}
   else if(NPC_ON&&npcOpen()&&Math.abs(P.x-NPX)<3.3+(P.z*NPS>HW-.9?0:.01)){const sg=NPS,lim=HW+35.2;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,NPX-3.3,NPX+3.3);}
   else if(MOR_ON&&Math.abs(P.x-MRX)<3.3+(P.z*MRS>HW-.9?0:.01)){const sg=MRS,lim=HW+MRL-.8;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,MRX-3.3,MRX+3.3);}
-  else if(KAEL_ON&&Math.abs(P.x-KX)<3.3+(P.z*KSD>HW-.9?0:.01)&&(kaelDoor||P.z*KSD>HW+.2)){const sg=KSD,lim=HW+35.2;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,KX-3.3,KX+3.3);}
+  else if(KAEL_ON&&Math.abs(P.x-KX)<3.3+(P.z*KSD>HW-.9?0:.01)&&(kaelDoor||oz0*KSD>HW+.2)){const sg=KSD,lim=HW+35.2;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,KX-3.3,KX+3.3);}
   else if(MERCH_ON&&Math.abs(P.x-MX)<3.3+(P.z*S.ms>HW-.9?0:.01)){const sg=S.ms,lim=HW+35.2;P.z=sg>0?clamp(P.z,-HW+.9,lim):clamp(P.z,-lim,HW-.9);if(P.z*sg>HW-.9)P.x=clamp(P.x,MX-3.3,MX+3.3);}
   else P.z=clamp(P.z,-HW+.9,HW-.9);
   const spd=Math.hypot(P.vx,P.vz);P.spd=spd;
