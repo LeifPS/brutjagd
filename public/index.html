@@ -497,23 +497,11 @@ const rand=(a,b)=>a+Math.random()*(b-a);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const W2V=246.7;/* Welt 2: Tor ab Tempo 15 Mio (246,7^3) */
 
-/* ---------- Zusatzinhalt „Welt 3: Das Jenseits“ (gekauft im Leif Game Hub, 500 Hexis) ----------
-   Das Spiel fragt den Hub per postMessage ({lgh:"dlc", spiel, aktion:"frage"}) und bekommt Besitz und Preis zurück. Gekauft wird nur im Hub.
-   Ohne Kauf (oder ohne Hub) bleibt das Spiel genau wie vorher: Das Tor am Ende von Welt 2 bleibt zu, Zähler und Listen zeigen nur Welt 1 und 2. */
-const DLC_ID='brutjagd-welt3';
-const DL={besitz:false,preis:500,antwort:false,imHub:window.parent!==window};
-if(DL.imHub){
-  addEventListener('message',e=>{
-    if(e.source!==window.parent)return;const d=e.data;
-    if(!d||d.lgh!=='dlc'||d.spiel!=='brutjagd')return;
-    const k=(d.katalog||[]).find(x=>x.id===DLC_ID);
-    DL.antwort=true;DL.besitz=!!(k&&k.besitz);DL.preis=k?k.preis|0:0;
-    if(typeof dlcChanged==='function')dlcChanged();
-  });
-  const frage=()=>{try{window.parent.postMessage({lgh:'dlc',spiel:'brutjagd',aktion:'frage'},'*');}catch(e){}};
-  frage();setTimeout(()=>{if(!DL.antwort)frage();},2000);setTimeout(()=>{if(!DL.antwort)frage();},6000);
-}
-function dlcKaufen(){try{window.parent.postMessage({lgh:'dlc',spiel:'brutjagd',aktion:'kaufen',id:DLC_ID},'*');}catch(e){}}
+/* ---------- Welt 3: Das Jenseits ----------
+   Früher ein Zusatzinhalt im Leif Game Hub, jetzt für alle Spieler dabei. DL.besitz bleibt als feste Schalter-Variable (immer true),
+   damit der restliche Code (Zähler, Listen, Tor) unverändert bleibt. */
+const DL={besitz:true,preis:0,antwort:true,imHub:false};
+function dlcKaufen(){}
 const hex6=n=>'#'+('000000'+n.toString(16)).slice(-6);
 
 /* ---------- Daten ---------- */
@@ -1090,10 +1078,10 @@ function buildLobbyPortals(){
   makePortal(-30,0,Math.PI/2,{kind:'to2',c1:0x7a2aff,c2:0xff9aff,r:7,half:90,lines:[['WELTENTOR',44,'#ffffff'],['Welt 2 · ab ⚡ 15M Tempo',30,'#ffb0ff']]});
   /* Zweites Weltentor am Ende von Gebiet 36: nur per E / „Betreten“, nie durch bloßes Dagegenlaufen */
   {const pe=makePortal(W1END-9.5,0,Math.PI/2,{kind:'to2',c1:0x7a2aff,c2:0xff9aff,r:3.6,half:120,rng:11,lines:[['WELTENTOR',50,'#ffffff'],['Welt 2 · E drücken',30,'#ffb0ff']]});}
-  /* Ende von Welt 2: Tor zu Welt 3 (Zusatzinhalt). Ohne Kauf bleibt es geschlossen, E öffnet dann im Hub die Kaufseite. */
+  /* Ende von Welt 2: Tor zu Welt 3: Das Jenseits. */
   if(NAREAS>W3A){
     addBox(2,16,HW*2+2.4,W2END+1,8,0,new THREE.MeshStandardMaterial({color:0x0e1c24,roughness:.8}),true);
-    makePortal(W2END-10,0,Math.PI/2,{kind:'to3',c1:0x1a8a9a,c2:0xb8fff0,r:6,half:150,rng:13,lines:[['WELT 3',54,'#ffffff'],['Das Jenseits',36,'#9affec'],['Zusatzinhalt',26,'#d8fff6']]});
+    makePortal(W2END-10,0,Math.PI/2,{kind:'to3',c1:0x1a8a9a,c2:0xb8fff0,r:6,half:150,rng:13,lines:[['WELT 3',54,'#ffffff'],['Das Jenseits',36,'#9affec'],['Extrem schwer',26,'#d8fff6']]});
   }
 }
 function buildHub(x,A,first){
